@@ -2,46 +2,42 @@ package com.example.gateway.enities;
 
 import java.util.ArrayList;
 
-public class FolderAttributes {
+public class ClassificationFolderAttributes {
     String code ;
     String arName;
     String enName ;
     String level;
-    String type;
     String progressDuration;
-    String interDuration;
-    String durationUnit;
-    String finalDeter;
-    ArrayList<String> owners;
+    String intermediateDuration;
+    String finalDetermination;
+    ArrayList<String> groups;
+    String ruleNumber;
     String parentID;
     String folderID;
 
-    public FolderAttributes() {
+    public ClassificationFolderAttributes() {
     }
 
-    public FolderAttributes(String code, String arName, String enName, String level, String type, String progressDuration, String interDuration, String durationUnit, String finalDeter, ArrayList<String> owners, String parentID, String folderID) {
+    public ClassificationFolderAttributes(String code, String arName, String enName, String level, String progressDuration, String intermediateDuration, String finalDetermination, ArrayList<String> groups, String ruleNumber, String parentID, String folderID) {
         this.code = code;
         this.arName = arName;
         this.enName = enName;
         this.level = level;
-        this.type = type;
         this.progressDuration = progressDuration;
-        this.interDuration = interDuration;
-        this.durationUnit = durationUnit;
-        this.finalDeter = finalDeter;
-        this.owners = owners;
+        this.intermediateDuration = intermediateDuration;
+        this.finalDetermination = finalDetermination;
+        this.groups = groups;
+        this.ruleNumber = ruleNumber;
         this.parentID = parentID;
         this.folderID = folderID;
     }
 
-    public FolderAttributes(String code, String arName, String enName, String level, String type, String parentID, String folderID) {
-        this.code = code;
-        this.arName = arName;
-        this.enName = enName;
-        this.level = level;
-        this.type = type;
-        this.parentID = parentID;
-        this.folderID = folderID;
+    public String getRuleNumber() {
+        return ruleNumber;
+    }
+
+    public void setRuleNumber(String ruleNumber) {
+        this.ruleNumber = ruleNumber;
     }
 
     public String getCode() {
@@ -76,14 +72,6 @@ public class FolderAttributes {
         this.level = level;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getProgressDuration() {
         return progressDuration;
     }
@@ -92,36 +80,28 @@ public class FolderAttributes {
         this.progressDuration = progressDuration;
     }
 
-    public String getInterDuration() {
-        return interDuration;
+    public String getIntermediateDuration() {
+        return intermediateDuration;
     }
 
-    public void setInterDuration(String interDuration) {
-        this.interDuration = interDuration;
+    public void setIntermediateDuration(String intermediateDuration) {
+        this.intermediateDuration = intermediateDuration;
     }
 
-    public String getDurationUnit() {
-        return durationUnit;
+    public String getFinalDetermination() {
+        return finalDetermination;
     }
 
-    public void setDurationUnit(String durationUnit) {
-        this.durationUnit = durationUnit;
+    public void setFinalDetermination(String finalDetermination) {
+        this.finalDetermination = finalDetermination;
     }
 
-    public String getFinalDeter() {
-        return finalDeter;
+    public ArrayList<String> getGroups() {
+        return groups;
     }
 
-    public void setFinalDeter(String finalDeter) {
-        this.finalDeter = finalDeter;
-    }
-
-    public ArrayList<String> getOwners() {
-        return owners;
-    }
-
-    public void setOwners(ArrayList<String> owners) {
-        this.owners = owners;
+    public void setGroups(ArrayList<String> groups) {
+        this.groups = groups;
     }
 
     public String getParentID() {
@@ -147,12 +127,11 @@ public class FolderAttributes {
                 ", arName='" + arName + '\'' +
                 ", enName='" + enName + '\'' +
                 ", level='" + level + '\'' +
-                ", type='" + type + '\'' +
                 ", progressDuration='" + progressDuration + '\'' +
-                ", interDuration='" + interDuration + '\'' +
-                ", durationUnit='" + durationUnit + '\'' +
-                ", finalDeter='" + finalDeter + '\'' +
-                ", owners='" + owners + '\'' +
+                ", intermediateDuration='" + intermediateDuration + '\'' +
+                ", finalDetermination='" + finalDetermination + '\'' +
+                ", groups=" + groups +
+                ", ruleNumber='" + ruleNumber + '\'' +
                 ", parentID='" + parentID + '\'' +
                 ", folderID='" + folderID + '\'' +
                 '}';

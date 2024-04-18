@@ -1,8 +1,11 @@
 package com.example.gateway.client;
 
+import com.example.gateway.constants.ClassificationFolder;
+import com.example.gateway.constants.Structures;
+import com.example.gateway.constants.UserArchivingFolder;
 import com.example.gateway.enities.CorrespondenceAttribute;
-import com.example.gateway.enities.FolderAttributes;
-import com.example.gateway.enities.LeafFolderAttributes;
+import com.example.gateway.enities.ClassificationFolderAttributes;
+import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.filenet.api.collection.ContentElementList;
 import com.filenet.api.collection.FolderSet;
 import com.filenet.api.collection.StringList;
@@ -20,34 +23,34 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.security.auth.Subject;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
+import java.time.LocalDate;
+import java.util.*;
+
 
 @Component
 public class FileNet {
+
     @Value("${connection.file.net}")
     private String connectionFileNet;
     @Value("${connection.object.store}")
-    private  String objectStroreName;
+    private  String objectStoreName;
     @Value("${connection.username}")
     private String connectionUsername;
     @Value("${connection.password}")
     private String connectionPassword;
-    @Value("${folder.class.leaf}")
-    private String leafFolderClass;
+
     public Connection getCEConnection () {
         Connection conn = null;
         try
         {
             String ceURI = connectionFileNet;
-            String userName = connectionUsername;
+            String username = connectionUsername;
             String password = connectionPassword;
 
             if (conn == null){
                 conn = Factory.Connection.getConnection(ceURI);
 
-                Subject subject = UserContext.createSubject(conn, userName, password, null);
+                Subject subject = UserContext.createSubject(conn, username, password, null);
                 UserContext uc = UserContext.get();
 
                 uc.pushSubject(subject);
@@ -61,31 +64,45 @@ public class FileNet {
     }
     public ObjectStore getObjectStore(Connection conn) {
         Domain domain = Factory.Domain.fetchInstance(conn, null, null);
-        ObjectStore objectStore = Factory.ObjectStore.fetchInstance(domain, objectStroreName, null);
+        ObjectStore objectStore = Factory.ObjectStore.fetchInstance(domain, objectStoreName, null);
         return objectStore;
     }
-    public void createArchive(LeafFolderAttributes folderProp){
+    public void createArchive(UserArchivingFolderAttributes folderProp){
 
         ObjectStore objectStore = getObjectStore(getCEConnection());
         Folder parentFolder = Factory.Folder.fetchInstance(objectStore,new Id(folderProp.getParentID()),null);
-        Folder myFolder = Factory.Folder.createInstance(objectStore,leafFolderClass);
+        Folder myFolder = Factory.Folder.createInstance(objectStore,UserArchivingFolder.UserArchivingFolder.toString());
+
         Properties parentProp = parentFolder.getProperties();
         Properties p = myFolder.getProperties();
         myFolder.set_Parent(parentFolder);
         myFolder.set_FolderName(folderProp.getArName()+"-"+folderProp.getCode());
-        // myFolder.set_Owner(folderProp.getOwners());
+
+        int level = Integer.parseInt(parentProp.getStringValue(Structures.level.toString()) + 1);
+        Calendar myCalendar = Calendar.getInstance();
+
+        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.progressDuration.toString())));
+        Date progressEndDate = myCalendar.getTime();
+
+        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString())));
+        Date intermediateEndDate = myCalendar.getTime();
+
         p.putValue("id",new Id(folderProp.getFolderID()));
-        p.putValue("code",folderProp.getCode());
-        p.putValue("arName", folderProp.getArName());
-        p.putValue("enName",folderProp.getEnName());
-        p.putValue("type",folderProp.getType());
-        p.putValue("level",folderProp.getLevel());
-        p.putValue("isOpened",folderProp.getOpend());
-        p.putValue("ownerID", folderProp.getOwnerID());
-        p.putValue("progressDuration",parentProp.getStringValue("progressDuration"));
-        p.putValue("interDuration",parentProp.getStringValue("interDuration"));
-        p.putValue("DurationUnit",parentProp.getStringValue("DurationUnit"));
-        p.putValue("finalDeter",parentProp.getStringValue("finalDeter"));
+
+        p.putValue(Structures.code.toString(),folderProp.getCode());
+        p.putValue(Structures.arName.toString(), folderProp.getArName());
+        p.putValue(Structures.enName.toString(),folderProp.getEnName());
+        p.putValue(UserArchivingFolder.ownerID.toString(), folderProp.getOwnerID());
+
+        p.putValue(Structures.level.toString(),String.valueOf(level));
+        p.putValue(UserArchivingFolder.isOpened.toString(),Boolean.TRUE);
+        p.putValue(UserArchivingFolder.progressEndDate.toString(), progressEndDate);
+        p.putValue(UserArchivingFolder.intermediateEndDate.toString(), intermediateEndDate);
+//        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+//        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+//        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+//
+
 
 //        p.putValue("Owners", parentProp.getStringListValue("Owners"));
 //        StringList owners = Factory.StringList.createList();
@@ -97,9 +114,9 @@ public class FileNet {
 
     }
 
-    public ArrayList<FolderAttributes> getLeafFoldersByOwnerID(String owners) {
+    public ArrayList<ClassificationFolderAttributes> getLeafFoldersByOwnerID(String owners) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        ArrayList<FolderAttributes> folderAttributes = new ArrayList<>();
+        ArrayList<ClassificationFolderAttributes> classificationFolderAttributes = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
         String mySQL = "SELECT [This], [ClassDescription], [CmIndexingFailureCode], [CmIsMarkedForDeletion]," +
                 " [CmRetentionDate], [ContainerType], [Creator], [DateCreated], [DateLastModified], " +
@@ -114,7 +131,7 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            FolderAttributes folderProperties= new FolderAttributes();
+            ClassificationFolderAttributes folderProperties= new ClassificationFolderAttributes();
 
             folderProperties.setFolderID(String.valueOf(folderProp.getIdValue("Id")));
             folderProperties.setParentID("No data");
@@ -122,27 +139,25 @@ public class FileNet {
             folderProperties.setEnName( folderProp.getStringValue("enName"));
             folderProperties.setCode( folderProp.getStringValue("code"));
             folderProperties.setLevel( folderProp.getStringValue("level"));
-            folderProperties.setType( folderProp.getStringValue("type"));
             folderProperties.setProgressDuration( folderProp.getStringValue("InprogressDuration"));
-            folderProperties.setInterDuration( folderProp.getStringValue("IntermediateDuration"));
-            folderProperties.setDurationUnit( folderProp.getStringValue("DurationUnit"));
-            folderProperties.setFinalDeter( folderProp.getStringValue("FinalDetermination"));
+            folderProperties.setIntermediateDuration( folderProp.getStringValue("IntermediateDuration"));
+            folderProperties.setFinalDetermination( folderProp.getStringValue("FinalDetermination"));
 
             StringList ownersList = folderProp.getStringListValue("Owners");
             String[] stringArray = (String[]) ownersList.toArray(new String[ownersList.size()]);
             ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(stringArray));
-            folderProperties.setOwners(arrayList);
+            folderProperties.setGroups(arrayList);
 
 //            System.out.println(folderProperties.toString());
-            folderAttributes.add(folderProperties);
+            classificationFolderAttributes.add(folderProperties);
         }
-        System.out.println(folderAttributes);
-        return folderAttributes;
+        System.out.println(classificationFolderAttributes);
+        return classificationFolderAttributes;
     }
 
-    public ArrayList<LeafFolderAttributes> getFilesByStatus (String ownerID, boolean isOpend) {
+    public ArrayList<UserArchivingFolderAttributes> getFilesByStatus (String ownerID, boolean isOpend) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        ArrayList<LeafFolderAttributes> folderAttributes = new ArrayList<>();
+        ArrayList<UserArchivingFolderAttributes> folderAttributes = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
         String mySQL;
         mySQL ="SELECT [This], [ClassDescription], [CmIndexingFailureCode], [CmIsMarkedForDeletion]," +
@@ -159,7 +174,7 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            LeafFolderAttributes folderProperties= new LeafFolderAttributes();
+            UserArchivingFolderAttributes folderProperties= new UserArchivingFolderAttributes();
 
             folderProperties.setFolderID(String.valueOf(folderProp.getIdValue("Id")));
             folderProperties.setParentID("No data");
@@ -167,18 +182,16 @@ public class FileNet {
             folderProperties.setEnName( folderProp.getStringValue("enName"));
             folderProperties.setCode( folderProp.getStringValue("code"));
             folderProperties.setLevel( folderProp.getStringValue("level"));
-            folderProperties.setType( folderProp.getStringValue("type"));
             folderProperties.setProgressDuration( folderProp.getStringValue("InprogressDuration"));
-            folderProperties.setInterDuration( folderProp.getStringValue("IntermediateDuration"));
-            folderProperties.setDurationUnit( folderProp.getStringValue("DurationUnit"));
-            folderProperties.setFinalDeter( folderProp.getStringValue("FinalDetermination"));
-            folderProperties.setOpend( folderProp.getBooleanValue("isOpend"));
+            folderProperties.setIntermediateDuration( folderProp.getStringValue("IntermediateDuration"));
+            folderProperties.setFinalDetermination( folderProp.getStringValue("FinalDetermination"));
+            folderProperties.setOpened( folderProp.getBooleanValue("isOpend"));
             folderProperties.setOwnerID(folderProp.getStringValue("ownerID"));
 
             StringList owners = folderProp.getStringListValue("Owners");
             String[] stringArray = (String[]) owners.toArray(new String[owners.size()]);
             ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(stringArray));
-            folderProperties.setOwners(arrayList);
+            folderProperties.setGroups(arrayList);
 
 //            System.out.println(folderProperties.toString());
             folderAttributes.add(folderProperties);
@@ -187,9 +200,9 @@ public class FileNet {
         return folderAttributes;
     }
 
-    public ArrayList<LeafFolderAttributes> getFilesByOwnerID (String ownerID) {
+    public ArrayList<UserArchivingFolderAttributes> getFilesByOwnerID (String ownerID) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        ArrayList<LeafFolderAttributes> folderAttributes = new ArrayList<>();
+        ArrayList<UserArchivingFolderAttributes> folderAttributes = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
         String mySQL;
         mySQL = "SELECT [This], [arName], [ClassDescription], [CmIndexingFailureCode], " +
@@ -206,7 +219,7 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            LeafFolderAttributes folderProperties= new LeafFolderAttributes();
+            UserArchivingFolderAttributes folderProperties= new UserArchivingFolderAttributes();
 
             folderProperties.setFolderID(String.valueOf(folderProp.getIdValue("Id")));
             folderProperties.setParentID("No data");
@@ -214,19 +227,17 @@ public class FileNet {
             folderProperties.setEnName( folderProp.getStringValue("enName"));
             folderProperties.setCode( folderProp.getStringValue("code"));
             folderProperties.setLevel( folderProp.getStringValue("level"));
-            folderProperties.setType( folderProp.getStringValue("type"));
-            folderProperties.setOpend( folderProp.getBooleanValue("isOpend"));
+            folderProperties.setOpened( folderProp.getBooleanValue("isOpend"));
             folderProperties.setOwnerID(folderProp.getStringValue("ownerID"));
             folderProperties.setProgressDuration( folderProp.getStringValue("InprogressDuration"));
-            folderProperties.setInterDuration( folderProp.getStringValue("IntermediateDuration"));
-            folderProperties.setDurationUnit( folderProp.getStringValue("DurationUnit"));
-            folderProperties.setFinalDeter( folderProp.getStringValue("FinalDetermination"));
+            folderProperties.setIntermediateDuration( folderProp.getStringValue("IntermediateDuration"));
+            folderProperties.setFinalDetermination( folderProp.getStringValue("FinalDetermination"));
 
 
             StringList owners = folderProp.getStringListValue("Owners");
             String[] stringArray = (String[]) owners.toArray(new String[owners.size()]);
             ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(stringArray));
-            folderProperties.setOwners(arrayList);
+            folderProperties.setGroups(arrayList);
 
 //            System.out.println(folderProperties.toString());
             folderAttributes.add(folderProperties);

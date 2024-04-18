@@ -1,8 +1,8 @@
 package com.example.gateway.service;
 
 import com.example.gateway.client.FileNet;
-import com.example.gateway.enities.FolderAttributes;
-import com.example.gateway.enities.LeafFolderAttributes;
+import com.example.gateway.enities.ClassificationFolderAttributes;
+import com.example.gateway.enities.UserArchivingFolderAttributes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,11 +15,11 @@ public class FileService {
 
     @Autowired
     FileNet fileNet;
-    public ArrayList<FolderAttributes> getLeafFoldersByOwnerID(String ownerId){
+    public ArrayList<ClassificationFolderAttributes> getLeafFoldersByOwnerID(String ownerId){
         return fileNet.getLeafFoldersByOwnerID(ownerId);
     }
 
-    public void createArchive(LeafFolderAttributes folderAttributes){
+    public void createArchive(UserArchivingFolderAttributes folderAttributes){
             fileNet.createArchive(folderAttributes);
     }
     public void createCorrespondence(){
@@ -28,7 +28,7 @@ public class FileService {
     public void createDocument(){
 
     }
-    public ArrayList<LeafFolderAttributes> GetFilesByOwnerId(String ownerID){
+    public ArrayList<UserArchivingFolderAttributes> GetFilesByOwnerId(String ownerID){
         return fileNet.getFilesByOwnerID(ownerID);
     }
     public void getCorrespondenceByFileID(){
@@ -44,7 +44,7 @@ public class FileService {
     public void GetNumbersOfCorrespondenceByStatus(){
 
     }
-    public ArrayList<LeafFolderAttributes> GetFileByStatus(String ownerID, boolean isOpend){
+    public ArrayList<UserArchivingFolderAttributes> GetFileByStatus(String ownerID, boolean isOpend){
         return fileNet.getFilesByStatus(ownerID, isOpend);
     }
 }
