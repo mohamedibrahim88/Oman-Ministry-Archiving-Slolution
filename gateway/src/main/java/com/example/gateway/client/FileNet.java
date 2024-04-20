@@ -77,11 +77,11 @@ public class FileNet {
         myFolder.set_Parent(parentFolder);
         myFolder.set_FolderName(folderProp.getArName()+"-"+folderProp.getCode());
 
-        int level = Integer.parseInt(parentProp.getStringValue(Structures.level.toString()) + 1);
+        int level = Integer.parseInt(parentProp.getStringValue(Structures.level.toString()).split("\\.")[0]) + 1;
         Calendar myCalendar = Calendar.getInstance();
-        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.progressDuration.toString())));
+        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.progressDuration.toString()).split("\\.")[0]));
         Date progressEndDate = myCalendar.getTime();
-        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString())));
+        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()).split("\\.")[0]));
         Date intermediateEndDate = myCalendar.getTime();
 
 //        p.putValue("id",new Id(folderProp.getFolderID()));
