@@ -1,5 +1,6 @@
 package com.example.gateway.service;
 
+import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.client.FileNet;
 import com.example.gateway.enities.ClassificationFolderAttributes;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
@@ -19,8 +20,8 @@ public class FileService {
         return fileNet.getLeafFoldersByOwnerID(ownerId);
     }
 
-    public void createArchive(UserArchivingFolderAttributes folderAttributes){
-            fileNet.createArchive(folderAttributes);
+    public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderAttributes){
+            return fileNet.createArchive(folderAttributes);
     }
     public void createCorrespondence(){
 

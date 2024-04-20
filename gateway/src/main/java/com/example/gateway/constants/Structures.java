@@ -1,7 +1,7 @@
 package com.example.gateway.constants;
 
 public enum Structures {
-    Structures,
+    structures,
     arName,
     enName,
     code,

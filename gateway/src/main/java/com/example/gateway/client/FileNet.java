@@ -1,5 +1,6 @@
 package com.example.gateway.client;
 
+import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.constants.ClassificationFolder;
 import com.example.gateway.constants.Structures;
 import com.example.gateway.constants.UserArchivingFolder;
@@ -23,7 +24,6 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.security.auth.Subject;
 import java.io.File;
 import java.io.FileInputStream;
-import java.time.LocalDate;
 import java.util.*;
 
 
@@ -67,12 +67,11 @@ public class FileNet {
         ObjectStore objectStore = Factory.ObjectStore.fetchInstance(domain, objectStoreName, null);
         return objectStore;
     }
-    public void createArchive(UserArchivingFolderAttributes folderProp){
+    public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderProp){
 
         ObjectStore objectStore = getObjectStore(getCEConnection());
         Folder parentFolder = Factory.Folder.fetchInstance(objectStore,new Id(folderProp.getParentID()),null);
-        Folder myFolder = Factory.Folder.createInstance(objectStore,UserArchivingFolder.UserArchivingFolder.toString());
-
+        Folder myFolder = Factory.Folder.createInstance(objectStore,UserArchivingFolder.userArchivingFolder.toString());
         Properties parentProp = parentFolder.getProperties();
         Properties p = myFolder.getProperties();
         myFolder.set_Parent(parentFolder);
@@ -80,20 +79,16 @@ public class FileNet {
 
         int level = Integer.parseInt(parentProp.getStringValue(Structures.level.toString()) + 1);
         Calendar myCalendar = Calendar.getInstance();
-
         myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.progressDuration.toString())));
         Date progressEndDate = myCalendar.getTime();
-
         myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString())));
         Date intermediateEndDate = myCalendar.getTime();
 
-        p.putValue("id",new Id(folderProp.getFolderID()));
-
+//        p.putValue("id",new Id(folderProp.getFolderID()));
         p.putValue(Structures.code.toString(),folderProp.getCode());
         p.putValue(Structures.arName.toString(), folderProp.getArName());
         p.putValue(Structures.enName.toString(),folderProp.getEnName());
         p.putValue(UserArchivingFolder.ownerID.toString(), folderProp.getOwnerID());
-
         p.putValue(Structures.level.toString(),String.valueOf(level));
         p.putValue(UserArchivingFolder.isOpened.toString(),Boolean.TRUE);
         p.putValue(UserArchivingFolder.progressEndDate.toString(), progressEndDate);
@@ -101,17 +96,35 @@ public class FileNet {
 //        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
 //        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
 //        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
-//
-
-
 //        p.putValue("Owners", parentProp.getStringListValue("Owners"));
 //        StringList owners = Factory.StringList.createList();
 //        boolean b = owners.addAll(folderProp.getOwners());
 //        p.putValue("Owners", owners);
-
-
         myFolder.save(RefreshMode.NO_REFRESH);
 
+//        String parentFolderPath =  parentFolder.get_PathName();
+//        Folder archivingFolder = Factory.Folder.fetchInstance(objectStore, parentFolderPath + "\\" + folderProp.getArName()+"-"+folderProp.getCode(), null);
+//        Properties archivingFolderProperties = archivingFolder.getProperties();
+//        String folderID = archivingFolderProperties.getIdValue("id").toString();
+        String folderID = myFolder.get_Id().toString();
+        folderID = folderID.replace("{","");
+        folderID = folderID.replace("}", "");
+
+        UserArchivingFolderDTO userArchivingFolderDTO = new UserArchivingFolderDTO();
+        userArchivingFolderDTO.setArName(folderProp.getArName());
+        userArchivingFolderDTO.setEnName(folderProp.getEnName());
+        userArchivingFolderDTO.setOwnerID(folderProp.getOwnerID());
+        userArchivingFolderDTO.setFolderID(folderID);
+        userArchivingFolderDTO.setCode(folderProp.getCode());
+        userArchivingFolderDTO.setLevel(String.valueOf(level));
+        userArchivingFolderDTO.setOpened(Boolean.TRUE);
+        userArchivingFolderDTO.setClassificationArName(parentProp.getStringValue(Structures.arName.toString()));
+        userArchivingFolderDTO.setClassificationEnName(parentProp.getStringValue(Structures.enName.toString()));
+        userArchivingFolderDTO.setProgressDuration(parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+        userArchivingFolderDTO.setIntermediateDuration(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+        userArchivingFolderDTO.setFinalDetermination(parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+
+        return userArchivingFolderDTO;
     }
 
     public ArrayList<ClassificationFolderAttributes> getLeafFoldersByOwnerID(String owners) {

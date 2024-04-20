@@ -1,7 +1,7 @@
 package com.example.gateway.constants;
 
 public enum UserArchivingFolder {
-    UserArchivingFolder,
+    userArchivingFolder,
     progressEndDate,
     intermediateEndDate,
     ownerID,

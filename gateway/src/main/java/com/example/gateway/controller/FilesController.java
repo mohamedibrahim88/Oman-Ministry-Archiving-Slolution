@@ -1,9 +1,11 @@
 package com.example.gateway.controller;
 
+import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.enities.ClassificationFolderAttributes;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.example.gateway.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -25,10 +27,12 @@ public class FilesController {
         return fileService.getLeafFoldersByOwnerID(ownerID);
     }
 
+//    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping()
-    public void createArchive(@RequestBody UserArchivingFolderAttributes folderAttributes){
+    public UserArchivingFolderDTO createArchive(@RequestBody UserArchivingFolderAttributes folderAttributes){
         System.out.println(folderAttributes);
-        fileService.createArchive(folderAttributes);
+        assert fileService != null;
+        return fileService.createArchive(folderAttributes);
     }
 
     @PostMapping("/correspondence")

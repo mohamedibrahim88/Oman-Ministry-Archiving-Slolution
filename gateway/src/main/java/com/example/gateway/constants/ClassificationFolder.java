@@ -1,7 +1,7 @@
 package com.example.gateway.constants;
 
 public enum ClassificationFolder {
-    ClassificationFolder,
+    classificationFolder,
     progressDuration,
     intermediateDuration,
     finalDetermination
