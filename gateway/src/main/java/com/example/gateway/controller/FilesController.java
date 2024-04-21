@@ -2,11 +2,9 @@ package com.example.gateway.controller;
 
 import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
-import com.example.gateway.enities.ClassificationFolderAttributes;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.example.gateway.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -24,9 +22,9 @@ public class FilesController {
     }
 
     @GetMapping()
-    public ArrayList<ClassificationFolderDTO> GetClassificationsFolderByOwnerID(@RequestParam String organization, @RequestParam String filterStr) {
+    public ArrayList<ClassificationFolderDTO> getClassificationsFolderByOwnerID(@RequestParam String organization, @RequestParam String filterStr) {
         assert fileService != null;
-        return fileService.GetClassificationsFolderByOwnerID(organization, filterStr);
+        return fileService.getClassificationsFolderByOwnerID(organization, filterStr);
     }
 
 //    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

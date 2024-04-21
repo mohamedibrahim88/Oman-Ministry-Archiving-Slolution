@@ -6,7 +6,6 @@ import com.example.gateway.constants.ClassificationFolder;
 import com.example.gateway.constants.Structures;
 import com.example.gateway.constants.UserArchivingFolder;
 import com.example.gateway.enities.CorrespondenceAttribute;
-import com.example.gateway.enities.ClassificationFolderAttributes;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.filenet.api.collection.ContentElementList;
 import com.filenet.api.collection.FolderSet;
@@ -130,7 +129,7 @@ public class FileNet {
         return userArchivingFolderDTO;
     }
 
-    public ArrayList<ClassificationFolderDTO> GetClassificationsFolderByOwnerID(String organization, String filterStr) {
+    public ArrayList<ClassificationFolderDTO> getClassificationsFolderByOwnerID(String organization, String filterStr) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
         ArrayList<ClassificationFolderDTO> classificationFolderDTO = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);

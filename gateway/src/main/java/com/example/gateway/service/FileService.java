@@ -3,7 +3,6 @@ package com.example.gateway.service;
 import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.client.FileNet;
-import com.example.gateway.enities.ClassificationFolderAttributes;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,8 @@ public class FileService {
 
     @Autowired
     FileNet fileNet;
-    public ArrayList<ClassificationFolderAttributes> getLeafFoldersByOwnerID(String ownerId){
-        return fileNet.getLeafFoldersByOwnerID(ownerId);
+    public ArrayList<ClassificationFolderDTO> getClassificationsFolderByOwnerID(String organization, String filterStr) {
+        return fileNet.getClassificationsFolderByOwnerID(organization, filterStr);
     }
 
     public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderAttributes){
@@ -50,7 +49,5 @@ public class FileService {
         return fileNet.getFilesByStatus(ownerID, isOpend);
     }
 
-    public ArrayList<ClassificationFolderDTO> GetClassificationsFolderByOwnerID(String organization, String filterStr) {
-        return fileNet.GetClassificationsFolderByOwnerID(organization, filterStr);
-    }
+
 }
