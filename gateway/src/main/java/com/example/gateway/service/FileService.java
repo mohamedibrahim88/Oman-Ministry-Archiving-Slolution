@@ -1,5 +1,6 @@
 package com.example.gateway.service;
 
+import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.client.FileNet;
 import com.example.gateway.enities.ClassificationFolderAttributes;
@@ -35,8 +36,8 @@ public class FileService {
     public void getCorrespondenceByFileID(){
 
     }
-    public void updateFileStatus(String folderID, boolean isOpend){
-        fileNet.updateFolderStatus(folderID, isOpend);
+    public void updateFileStatus(String folderID){
+        fileNet.updateFolderStatus(folderID);
     }
     public void deleteFileById(String folderID){
         fileNet.deleteFolderByID(folderID);
@@ -47,5 +48,9 @@ public class FileService {
     }
     public ArrayList<UserArchivingFolderAttributes> GetFileByStatus(String ownerID, boolean isOpend){
         return fileNet.getFilesByStatus(ownerID, isOpend);
+    }
+
+    public ArrayList<ClassificationFolderDTO> GetClassificationsFolderByOwnerID(String organization, String filterStr) {
+        return fileNet.GetClassificationsFolderByOwnerID(organization, filterStr);
     }
 }

@@ -1,5 +1,6 @@
 package com.example.gateway.controller;
 
+import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.enities.ClassificationFolderAttributes;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
@@ -23,8 +24,9 @@ public class FilesController {
     }
 
     @GetMapping()
-    public ArrayList<ClassificationFolderAttributes> getLeafFoldersByOwnerID(@RequestParam  String ownerID){
-        return fileService.getLeafFoldersByOwnerID(ownerID);
+    public ArrayList<ClassificationFolderDTO> GetClassificationsFolderByOwnerID(@RequestParam String organization, @RequestParam String filterStr) {
+        assert fileService != null;
+        return fileService.GetClassificationsFolderByOwnerID(organization, filterStr);
     }
 
 //    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -66,12 +68,14 @@ public class FilesController {
     }
 
     @PutMapping()
-    public void updateFileStatus(@RequestParam String folderID, @RequestParam boolean isOpend){
-        fileService.updateFileStatus(folderID, isOpend);
+    public void updateFileStatus(@RequestParam String folderID){
+        fileService.updateFileStatus(folderID);
     }
 
     @DeleteMapping()
     public void deleteFileById(@RequestParam String folderID){
         fileService.deleteFileById(folderID);
     }
+
+
 }

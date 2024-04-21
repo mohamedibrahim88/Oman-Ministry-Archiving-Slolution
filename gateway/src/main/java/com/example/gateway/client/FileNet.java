@@ -1,5 +1,6 @@
 package com.example.gateway.client;
 
+import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.constants.ClassificationFolder;
 import com.example.gateway.constants.Structures;
@@ -62,11 +63,13 @@ public class FileNet {
         System.out.println("CE Connection"+ conn);
         return conn ;
     }
+
     public ObjectStore getObjectStore(Connection conn) {
         Domain domain = Factory.Domain.fetchInstance(conn, null, null);
         ObjectStore objectStore = Factory.ObjectStore.fetchInstance(domain, objectStoreName, null);
         return objectStore;
     }
+
     public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderProp){
 
         ObjectStore objectStore = getObjectStore(getCEConnection());
@@ -127,45 +130,35 @@ public class FileNet {
         return userArchivingFolderDTO;
     }
 
-    public ArrayList<ClassificationFolderAttributes> getLeafFoldersByOwnerID(String owners) {
+    public ArrayList<ClassificationFolderDTO> GetClassificationsFolderByOwnerID(String organization, String filterStr) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        ArrayList<ClassificationFolderAttributes> classificationFolderAttributes = new ArrayList<>();
+        ArrayList<ClassificationFolderDTO> classificationFolderDTO = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
-        String mySQL = "SELECT [This], [ClassDescription], [CmIndexingFailureCode], [CmIsMarkedForDeletion]," +
-                " [CmRetentionDate], [ContainerType], [Creator], [DateCreated], [DateLastModified], " +
-                "[DurationUnit], [FinalDetermination], [FolderName], [Id], [IndexationId], " +
-                "[InheritParentPermissions], [InprogressDuration], [IntermediateDuration], " +
-                "[IsHiddenContainer], [LastModifier], [LockOwner], [LockTimeout], [LockToken], " +
-                "[Name], [Owner], [PathName], [Owners], [arName], [code], [enName], [level], [type]  " +
-                "FROM [structures] WHERE '" + owners  +"' in [Owners] OPTIONS(TIMELIMIT 180)";
+
+        String mySQL = "SELECT * " +
+                "FROM [" + ClassificationFolder.classificationFolder.toString() +
+                "] WHERE '" + organization + "' like '" + filterStr + "%' OPTIONS(TIMELIMIT 180)";
+
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
         Iterator it1 = folders.iterator();
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            ClassificationFolderAttributes folderProperties= new ClassificationFolderAttributes();
+            ClassificationFolderDTO classificationFolderDTO1 = new ClassificationFolderDTO();
 
-            folderProperties.setFolderID(String.valueOf(folderProp.getIdValue("Id")));
-            folderProperties.setParentID("No data");
-            folderProperties.setArName(folderProp.getStringValue("ArName")) ;
-            folderProperties.setEnName( folderProp.getStringValue("enName"));
-            folderProperties.setCode( folderProp.getStringValue("code"));
-            folderProperties.setLevel( folderProp.getStringValue("level"));
-            folderProperties.setProgressDuration( folderProp.getStringValue("InprogressDuration"));
-            folderProperties.setIntermediateDuration( folderProp.getStringValue("IntermediateDuration"));
-            folderProperties.setFinalDetermination( folderProp.getStringValue("FinalDetermination"));
+            classificationFolderDTO1.setFolderID(folderProp.getIdValue(Structures.id.toString()).toString());
+            classificationFolderDTO1.setArName(folderProp.getStringValue(Structures.arName.toString()));
+            classificationFolderDTO1.setEnName(folderProp.getStringValue(Structures.enName.toString()));
+            classificationFolderDTO1.setCode(folderProp.getStringValue(Structures.code.toString()));
+            classificationFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            classificationFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            classificationFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
 
-            StringList ownersList = folderProp.getStringListValue("Owners");
-            String[] stringArray = (String[]) ownersList.toArray(new String[ownersList.size()]);
-            ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(stringArray));
-            folderProperties.setGroups(arrayList);
-
-//            System.out.println(folderProperties.toString());
-            classificationFolderAttributes.add(folderProperties);
+            classificationFolderDTO.add(classificationFolderDTO1);
         }
-        System.out.println(classificationFolderAttributes);
-        return classificationFolderAttributes;
+
+        return classificationFolderDTO;
     }
 
     public ArrayList<UserArchivingFolderAttributes> getFilesByStatus (String ownerID, boolean isOpend) {
@@ -266,11 +259,11 @@ public class FileNet {
         folder.save(RefreshMode.NO_REFRESH);
     }
 
-    public void updateFolderStatus(String folderID, boolean isOpend){
+    public void updateFolderStatus(String folderID){
         ObjectStore objectStore = getObjectStore(getCEConnection());
         Folder folder = Factory.Folder.fetchInstance(objectStore, new Id(folderID), null);
         Properties p = folder.getProperties();
-        p.putValue("isOpend", isOpend);
+        p.putValue(UserArchivingFolder.isOpened.toString(), Boolean.FALSE);
         folder.save(RefreshMode.NO_REFRESH);
     }
 
@@ -280,6 +273,7 @@ public class FileNet {
         String mimeType = mimeTypesMap.getContentType(fileUrl);
         return mimeType;
     }
+
     public void createCorrespondenceDoc(CorrespondenceAttribute correspondenceAttribute) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
         Document document = null;
@@ -348,4 +342,5 @@ public class FileNet {
             System.out.println(e.getMessage());
         }
     }
+
 }
