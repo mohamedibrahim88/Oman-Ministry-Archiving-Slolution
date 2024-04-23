@@ -3,27 +3,37 @@ package com.example.gateway.enities;
 import java.util.HashMap;
 
 public class AttachmentsAttributes {
-    String ID;
+    String correspondenceID;
+    String docTitle;
     String classification;
     String path;
-    HashMap<String,String> prop = new HashMap<String,String>();
+    HashMap<String,Object> prop = new HashMap<String,Object>();
 
     public AttachmentsAttributes() {
     }
 
-    public AttachmentsAttributes(String ID, String classification, String path, HashMap<String, String> prop) {
-        this.ID = ID;
+    public AttachmentsAttributes(String correspondenceID, String docTitle, String classification, String path, HashMap<String, Object> prop) {
+        this.correspondenceID = correspondenceID;
+        this.docTitle = docTitle;
         this.classification = classification;
         this.path = path;
         this.prop = prop;
     }
 
-    public String getID() {
-        return ID;
+    public String getCorrespondenceID() {
+        return correspondenceID;
     }
 
-    public void setID(String ID) {
-        this.ID = ID;
+    public void setCorrespondenceID(String correspondenceID) {
+        this.correspondenceID = correspondenceID;
+    }
+
+    public String getDocTitle() {
+        return docTitle;
+    }
+
+    public void setDocTitle(String docTitle) {
+        this.docTitle = docTitle;
     }
 
     public String getClassification() {
@@ -42,18 +52,19 @@ public class AttachmentsAttributes {
         this.path = path;
     }
 
-    public HashMap<String, String> getProp() {
+    public HashMap<String, Object> getProp() {
         return prop;
     }
 
-    public void setProp(HashMap<String, String> prop) {
+    public void setProp(HashMap<String, Object> prop) {
         this.prop = prop;
     }
 
     @Override
     public String toString() {
         return "AttachmentsAttributes{" +
-                "ID='" + ID + '\'' +
+                "correspondenceID='" + correspondenceID + '\'' +
+                ", docTitle='" + docTitle + '\'' +
                 ", classification='" + classification + '\'' +
                 ", path='" + path + '\'' +
                 ", prop=" + prop +

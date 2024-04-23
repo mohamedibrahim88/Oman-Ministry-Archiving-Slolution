@@ -1,7 +1,7 @@
 package com.example.gateway.constants;
 
-public enum CorrespondenceFolder {
-    correspondenceFolder,
+public enum CorrespondenceDocument {
+    Correspondence,
     Senders,
     Recievers,
     BCC,

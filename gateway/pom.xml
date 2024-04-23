@@ -120,6 +120,10 @@
 			<artifactId>xlxp</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>com.utils</groupId>
@@ -131,7 +135,7 @@
 			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>

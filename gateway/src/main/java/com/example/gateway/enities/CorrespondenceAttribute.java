@@ -3,10 +3,13 @@ package com.example.gateway.enities;
 import java.util.ArrayList;
 
 public class CorrespondenceAttribute {
+
     String folderID;
+    String userID;
     String correspondenceID;
     String subject;
     String path;
+    String docTitle;
     ArrayList<String> senders;
     ArrayList<String> recievers;
     ArrayList<String> cc;
@@ -17,11 +20,13 @@ public class CorrespondenceAttribute {
     public CorrespondenceAttribute() {
     }
 
-    public CorrespondenceAttribute(String folderID, String correspondenceID, String subject, String path, ArrayList<String> senders, ArrayList<String> recievers, ArrayList<String> cc, ArrayList<String> bcc, ArrayList<AttachmentsAttributes> attachmentsAttributes) {
+    public CorrespondenceAttribute(String folderID, String userID, String correspondenceID, String subject, String path, String docTitle, ArrayList<String> senders, ArrayList<String> recievers, ArrayList<String> cc, ArrayList<String> bcc, ArrayList<AttachmentsAttributes> attachmentsAttributes) {
         this.folderID = folderID;
+        this.userID = userID;
         this.correspondenceID = correspondenceID;
         this.subject = subject;
         this.path = path;
+        this.docTitle = docTitle;
         this.senders = senders;
         this.recievers = recievers;
         this.cc = cc;
@@ -35,6 +40,14 @@ public class CorrespondenceAttribute {
 
     public void setFolderID(String folderID) {
         this.folderID = folderID;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 
     public String getCorrespondenceID() {
@@ -59,6 +72,14 @@ public class CorrespondenceAttribute {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public String getDocTitle() {
+        return docTitle;
+    }
+
+    public void setDocTitle(String docTitle) {
+        this.docTitle = docTitle;
     }
 
     public ArrayList<String> getSenders() {
@@ -105,9 +126,11 @@ public class CorrespondenceAttribute {
     public String toString() {
         return "CorrespondenceAttribute{" +
                 "folderID='" + folderID + '\'' +
+                ", userID='" + userID + '\'' +
                 ", correspondenceID='" + correspondenceID + '\'' +
                 ", subject='" + subject + '\'' +
                 ", path='" + path + '\'' +
+                ", docTitle='" + docTitle + '\'' +
                 ", senders=" + senders +
                 ", recievers=" + recievers +
                 ", cc=" + cc +
