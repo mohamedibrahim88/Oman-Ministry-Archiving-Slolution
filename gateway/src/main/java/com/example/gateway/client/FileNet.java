@@ -102,7 +102,7 @@ public class FileNet {
 //        StringList owners = Factory.StringList.createList();
 //        boolean b = owners.addAll(folderProp.getOwners());
 //        p.putValue("Owners", owners);
-        myFolder.save(RefreshMode.NO_REFRESH);
+        myFolder.save(RefreshMode.REFRESH);
 
 //        String parentFolderPath =  parentFolder.get_PathName();
 //        Folder archivingFolder = Factory.Folder.fetchInstance(objectStore, parentFolderPath + "\\" + folderProp.getArName()+"-"+folderProp.getCode(), null);
@@ -134,9 +134,11 @@ public class FileNet {
         ArrayList<ClassificationFolderDTO> classificationFolderDTO = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
 
-        String mySQL = "SELECT * " +
-                "FROM [" + ClassificationFolder.classificationFolder.toString() +
-                "] WHERE '" + organization + "' like '" + filterStr + "%' OPTIONS(TIMELIMIT 180)";
+        String mySQL = "SELECT [This], [FolderName], [Id], [arName], [code], [enName], " +
+                "[finalDetermination], [intermediateDuration], [level], [progressDuration], " +
+                "[ruleNumber] FROM [" + ClassificationFolder.classificationFolders.toString() +
+                "] WHERE '" + organization + "' in [Groups] AND " +
+                "[FolderName] like '" + filterStr + "%' OPTIONS(TIMELIMIT 180)";
 
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
