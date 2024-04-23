@@ -2,6 +2,7 @@ package com.example.gateway.controller;
 
 import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
+import com.example.gateway.enities.CorrespondenceAttribute;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.example.gateway.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,8 @@ public class FilesController {
     }
 
     @PostMapping("/correspondence")
-    public void createCorrespondence(){
-        fileService.createCorrespondence();
+    public void createCorrespondence(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes){
+        fileService.createCorrespondence(correspondenceAttributes);
     }
 
     @PostMapping("/document")

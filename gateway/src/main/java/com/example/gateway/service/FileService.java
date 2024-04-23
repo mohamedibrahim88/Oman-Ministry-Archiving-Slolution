@@ -3,6 +3,7 @@ package com.example.gateway.service;
 import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.client.FileNet;
+import com.example.gateway.enities.CorrespondenceAttribute;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,8 @@ public class FileService {
     public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderAttributes){
             return fileNet.createArchive(folderAttributes);
     }
-    public void createCorrespondence(){
-
+    public void createCorrespondence(ArrayList<CorrespondenceAttribute> correspondenceAttributes){
+        fileNet.createCorrespondenceDoc(correspondenceAttributes);
     }
     public void createDocument(){
 
