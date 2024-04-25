@@ -161,63 +161,55 @@ public class FileNet {
         return classificationFolderDTO;
     }
 
-    public ArrayList<UserArchivingFolderAttributes> getFilesByStatus (String ownerID, boolean isOpend) {
+    public ArrayList<UserArchivingFolderDTO> getUserFoldersByStatus(String ownerID, boolean isOpened) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        ArrayList<UserArchivingFolderAttributes> folderAttributes = new ArrayList<>();
+        ArrayList<UserArchivingFolderDTO> userArchivingFolderDTO = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
         String mySQL;
-        mySQL ="SELECT [This], [ClassDescription], [CmIndexingFailureCode], [CmIsMarkedForDeletion]," +
-                " [CmRetentionDate], [ContainerType], [Creator], [DateCreated], [DateLastModified]," +
-                " [DurationUnit], [FinalDetermination], [FolderName], [Id], [IndexationId]," +
-                " [InheritParentPermissions], [InprogressDuration], [IntermediateDuration]," +
-                " [IsHiddenContainer], [LastModifier], [LockOwner], [LockTimeout], [LockToken]," +
-                " [Name], [Owner], [Owners], [PathName], [arName], [code], [enName], [isOpend], [level]," +
-                " [ownerID], [type]  FROM [leaf] WHERE [ownerID] ='" + ownerID + "'and [isOpend] =" + isOpend +
-                " OPTIONS(TIMELIMIT 180)";
+        mySQL = "SELECT [This], [FolderName], [Id], [arName], [code], [enName], " +
+                "[finalDetermination], [intermediateDuration], [level], [progressDuration], " +
+                "[ruleNumber], [ownerID], [isOpened] FROM [" + UserArchivingFolder.userArchivingFolder.toString() +
+                "] WHERE [ownerID] = '" + ownerID + "' AND " +
+                "[isOpened] = '" + isOpened + "' OPTIONS(TIMELIMIT 180)";
+
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
         Iterator it1 = folders.iterator();
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            UserArchivingFolderAttributes folderProperties= new UserArchivingFolderAttributes();
+            Folder parentFolder = folder.get_Parent();
+            Properties parentFolderProp = parentFolder.getProperties();
+            UserArchivingFolderDTO userArchivingFolderDTO1= new UserArchivingFolderDTO();
 
-            folderProperties.setFolderID(String.valueOf(folderProp.getIdValue("Id")));
-            folderProperties.setParentID("No data");
-            folderProperties.setArName(folderProp.getStringValue("ArName")) ;
-            folderProperties.setEnName( folderProp.getStringValue("enName"));
-            folderProperties.setCode( folderProp.getStringValue("code"));
-            folderProperties.setLevel( folderProp.getStringValue("level"));
-            folderProperties.setProgressDuration( folderProp.getStringValue("InprogressDuration"));
-            folderProperties.setIntermediateDuration( folderProp.getStringValue("IntermediateDuration"));
-            folderProperties.setFinalDetermination( folderProp.getStringValue("FinalDetermination"));
-            folderProperties.setOpened( folderProp.getBooleanValue("isOpend"));
-            folderProperties.setOwnerID(folderProp.getStringValue("ownerID"));
+            userArchivingFolderDTO1.setFolderID(folderProp.getIdValue(Structures.id.toString()).toString());
+            userArchivingFolderDTO1.setArName(folderProp.getStringValue(Structures.arName.toString()));
+            userArchivingFolderDTO1.setEnName(folderProp.getStringValue(Structures.enName.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(Structures.code.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(Structures.level.toString()));
+            userArchivingFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            userArchivingFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            userArchivingFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(UserArchivingFolder.ownerID.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(UserArchivingFolder.isOpened.toString()));
+            userArchivingFolderDTO1.setClassificationEnName(parentFolderProp.getStringValue(Structures.enName.toString()));
+            userArchivingFolderDTO1.setClassificationArName(parentFolderProp.getStringValue(Structures.arName.toString()));
 
-            StringList owners = folderProp.getStringListValue("Owners");
-            String[] stringArray = (String[]) owners.toArray(new String[owners.size()]);
-            ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(stringArray));
-            folderProperties.setGroups(arrayList);
-
-//            System.out.println(folderProperties.toString());
-            folderAttributes.add(folderProperties);
+            userArchivingFolderDTO.add(userArchivingFolderDTO1);
         }
-        System.out.println(folderAttributes);
-        return folderAttributes;
+        return userArchivingFolderDTO;
     }
 
-    public ArrayList<UserArchivingFolderAttributes> getFilesByOwnerID (String ownerID) {
+    public ArrayList<UserArchivingFolderDTO> getUserFoldersByOwnerID(String ownerID, String filterStr) {
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        ArrayList<UserArchivingFolderAttributes> folderAttributes = new ArrayList<>();
+        ArrayList<UserArchivingFolderDTO> userArchivingFolderDTO = new ArrayList<>();
         SearchScope search = new SearchScope(objectStore);
         String mySQL;
-        mySQL = "SELECT [This], [arName], [ClassDescription], [CmIndexingFailureCode], " +
-                "[CmIsMarkedForDeletion], [CmRetentionDate], [ContainerType], [Creator], [DateCreated], " +
-                "[DateLastModified], [DurationUnit], [FinalDetermination], [FolderName], [Id], " +
-                "[IndexationId], [InheritParentPermissions], [InprogressDuration], [IntermediateDuration], " +
-                "[IsHiddenContainer], [LastModifier], [LockOwner], [LockTimeout], [LockToken], [Name], " +
-                "[Owner], [Owners], [PathName], [code], [enName], [ownerID], [level],[isOpend], " +
-                "[type] FROM [leaf] WHERE [ownerID] ='" + ownerID + "' OPTIONS(TIMELIMIT 180)";
+        mySQL = "SELECT [This], [FolderName], [Id], [arName], [code], [enName], " +
+                "[finalDetermination], [intermediateDuration], [level], [progressDuration], " +
+                "[ruleNumber], [ownerID], [isOpened] FROM [" + UserArchivingFolder.userArchivingFolder.toString() +
+                "] WHERE [ownerID] = '" + ownerID + "' AND " +
+                "[FolderName] like '" + filterStr + "%' OPTIONS(TIMELIMIT 180)";
 
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
@@ -225,31 +217,26 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            UserArchivingFolderAttributes folderProperties= new UserArchivingFolderAttributes();
+            Folder parentFolder = folder.get_Parent();
+            Properties parentFolderProp = parentFolder.getProperties();
+            UserArchivingFolderDTO userArchivingFolderDTO1= new UserArchivingFolderDTO();
 
-            folderProperties.setFolderID(String.valueOf(folderProp.getIdValue("Id")));
-            folderProperties.setParentID("No data");
-            folderProperties.setArName(folderProp.getStringValue("ArName")) ;
-            folderProperties.setEnName( folderProp.getStringValue("enName"));
-            folderProperties.setCode( folderProp.getStringValue("code"));
-            folderProperties.setLevel( folderProp.getStringValue("level"));
-            folderProperties.setOpened( folderProp.getBooleanValue("isOpend"));
-            folderProperties.setOwnerID(folderProp.getStringValue("ownerID"));
-            folderProperties.setProgressDuration( folderProp.getStringValue("InprogressDuration"));
-            folderProperties.setIntermediateDuration( folderProp.getStringValue("IntermediateDuration"));
-            folderProperties.setFinalDetermination( folderProp.getStringValue("FinalDetermination"));
+            userArchivingFolderDTO1.setFolderID(folderProp.getIdValue(Structures.id.toString()).toString());
+            userArchivingFolderDTO1.setArName(folderProp.getStringValue(Structures.arName.toString()));
+            userArchivingFolderDTO1.setEnName(folderProp.getStringValue(Structures.enName.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(Structures.code.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(Structures.level.toString()));
+            userArchivingFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            userArchivingFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            userArchivingFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(UserArchivingFolder.ownerID.toString()));
+            userArchivingFolderDTO1.setCode(folderProp.getStringValue(UserArchivingFolder.isOpened.toString()));
+            userArchivingFolderDTO1.setClassificationEnName(parentFolderProp.getStringValue(Structures.enName.toString()));
+            userArchivingFolderDTO1.setClassificationArName(parentFolderProp.getStringValue(Structures.arName.toString()));
 
-
-            StringList owners = folderProp.getStringListValue("Owners");
-            String[] stringArray = (String[]) owners.toArray(new String[owners.size()]);
-            ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(stringArray));
-            folderProperties.setGroups(arrayList);
-
-//            System.out.println(folderProperties.toString());
-            folderAttributes.add(folderProperties);
+            userArchivingFolderDTO.add(userArchivingFolderDTO1);
         }
-        System.out.println(folderAttributes);
-        return folderAttributes;
+        return userArchivingFolderDTO;
     }
 
     public void deleteFolderByID(String folderID){
@@ -284,14 +271,6 @@ public class FileNet {
         }
         return true;
     }
-
-
-
-
-
-
-
-
 
     /////////////////Create CRS//////////////////////
 

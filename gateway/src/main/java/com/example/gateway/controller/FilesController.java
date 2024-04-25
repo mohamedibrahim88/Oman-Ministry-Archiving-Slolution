@@ -35,24 +35,28 @@ public class FilesController {
         return fileService.createArchive(folderAttributes);
     }
 
+    @GetMapping("/ownerId")
+    public ArrayList<UserArchivingFolderDTO> GetFilesByOwnerId(@RequestParam String ownerID, @RequestParam String filterStr ){
+        assert fileService != null;
+        return fileService.getUserFoldersByOwnerID(ownerID, filterStr);
+    }
+
+    @GetMapping("/byStatus")
+    public ArrayList<UserArchivingFolderDTO> GetFileByStatus(@RequestParam String ownerID, @RequestParam boolean isOpened){
+        assert fileService != null;
+        return fileService.getUserFoldersByStatus(ownerID, isOpened);
+    }
+
     @PostMapping("/correspondence")
     public void createCorrespondence(){
+        assert fileService != null;
         fileService.createCorrespondence();
     }
 
     @PostMapping("/document")
     public void createDocument(){
+        assert fileService != null;
         fileService.createDocument();
-    }
-
-    @GetMapping("/ownerId")
-    public ArrayList<UserArchivingFolderAttributes> GetFilesByOwnerId(@RequestParam String ownerID){
-        return fileService.GetFilesByOwnerId(ownerID);
-    }
-
-    @GetMapping("/byStatus")
-    public ArrayList<UserArchivingFolderAttributes> GetFileByStatus(@RequestParam String ownerID, @RequestParam boolean isOpend){
-        return fileService.GetFileByStatus(ownerID, isOpend);
     }
 
     @GetMapping("/countsByStatus")

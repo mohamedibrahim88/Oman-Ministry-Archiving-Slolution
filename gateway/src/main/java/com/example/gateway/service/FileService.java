@@ -29,8 +29,11 @@ public class FileService {
     public void createDocument(){
 
     }
-    public ArrayList<UserArchivingFolderAttributes> GetFilesByOwnerId(String ownerID){
-        return fileNet.getFilesByOwnerID(ownerID);
+    public ArrayList<UserArchivingFolderDTO> getUserFoldersByOwnerID(String ownerID, String filterStr){
+        return fileNet.getUserFoldersByOwnerID(ownerID, filterStr);
+    }
+    public ArrayList<UserArchivingFolderDTO> getUserFoldersByStatus(String ownerID, boolean isOpened){
+        return fileNet.getUserFoldersByStatus(ownerID, isOpened);
     }
     public void getCorrespondenceByFileID(){
 
@@ -45,9 +48,7 @@ public class FileService {
     public void GetNumbersOfCorrespondenceByStatus(){
 
     }
-    public ArrayList<UserArchivingFolderAttributes> GetFileByStatus(String ownerID, boolean isOpend){
-        return fileNet.getFilesByStatus(ownerID, isOpend);
-    }
+
 
 
 }
