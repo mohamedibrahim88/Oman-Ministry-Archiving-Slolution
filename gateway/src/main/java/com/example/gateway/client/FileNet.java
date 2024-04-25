@@ -85,7 +85,6 @@ public class FileNet {
         myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()).split("\\.")[0]));
         Date intermediateEndDate = myCalendar.getTime();
 
-//        p.putValue("id",new Id(folderProp.getFolderID()));
         p.putValue(Structures.code.toString(),folderProp.getCode());
         p.putValue(Structures.arName.toString(), folderProp.getArName());
         p.putValue(Structures.enName.toString(),folderProp.getEnName());
@@ -97,10 +96,7 @@ public class FileNet {
 //        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
 //        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
 //        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
-//        p.putValue("Owners", parentProp.getStringListValue("Owners"));
-//        StringList owners = Factory.StringList.createList();
-//        boolean b = owners.addAll(folderProp.getOwners());
-//        p.putValue("Owners", owners);
+
         myFolder.save(RefreshMode.REFRESH);
 
 //        String parentFolderPath =  parentFolder.get_PathName();
