@@ -178,7 +178,8 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(folderProp.getIdValue(Structures.id.toString()).toString()), null);
+            Folder userArchivingFolder = Factory.Folder.fetchInstance(objectStore, new Id(folderProp.getIdValue(Structures.id.toString()).toString()), null);
+            Folder parentFolder = userArchivingFolder.get_Parent();
             Properties parentFolderProp = parentFolder.getProperties();
             UserArchivingFolderDTO userArchivingFolderDTO1= new UserArchivingFolderDTO();
 
@@ -216,7 +217,8 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(folderProp.getIdValue(Structures.id.toString()).toString()), null);
+            Folder userArchivingFolder = Factory.Folder.fetchInstance(objectStore, new Id(folderProp.getIdValue(Structures.id.toString()).toString()), null);
+            Folder parentFolder = userArchivingFolder.get_Parent();
             Properties parentFolderProp = parentFolder.getProperties();
             UserArchivingFolderDTO userArchivingFolderDTO1= new UserArchivingFolderDTO();
 
