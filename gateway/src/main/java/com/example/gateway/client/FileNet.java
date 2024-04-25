@@ -217,7 +217,7 @@ public class FileNet {
         while (it1.hasNext()) {
             Folder folder = (Folder) it1.next();
             Properties folderProp = folder.getProperties();
-            Folder parentFolder = folder.get_Parent();
+            Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(folderProp.getIdValue(Structures.id.toString()).toString()), null);
             Properties parentFolderProp = parentFolder.getProperties();
             UserArchivingFolderDTO userArchivingFolderDTO1= new UserArchivingFolderDTO();
 
