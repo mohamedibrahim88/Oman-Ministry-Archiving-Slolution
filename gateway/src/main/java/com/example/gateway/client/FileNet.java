@@ -166,7 +166,7 @@ public class FileNet {
                 "[finalDetermination], [intermediateDuration], [level], [progressDuration], " +
                 "[ruleNumber], [ownerID], [isOpened] FROM [" + UserArchivingFolder.userArchivingFolder.toString() +
                 "] WHERE [ownerID] = '" + ownerID + "' AND " +
-                "[isOpened] = '" + isOpened + "' OPTIONS(TIMELIMIT 180)";
+                "[isOpened] = " + isOpened + " OPTIONS(TIMELIMIT 180)";
 
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
