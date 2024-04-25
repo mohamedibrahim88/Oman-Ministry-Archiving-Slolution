@@ -188,13 +188,15 @@ public class FileNet {
             userArchivingFolderDTO1.setEnName(folderProp.getStringValue(Structures.enName.toString()));
             userArchivingFolderDTO1.setCode(folderProp.getStringValue(Structures.code.toString()));
             userArchivingFolderDTO1.setLevel(folderProp.getStringValue(Structures.level.toString()));
-            userArchivingFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
-            userArchivingFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
-            userArchivingFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
             userArchivingFolderDTO1.setOwnerID(folderProp.getStringValue(UserArchivingFolder.ownerID.toString()));
             userArchivingFolderDTO1.setOpened(folderProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+
+            userArchivingFolderDTO1.setProgressDuration(parentFolderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            userArchivingFolderDTO1.setIntermediateDuration(parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            userArchivingFolderDTO1.setFinalDetermination(parentFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
             userArchivingFolderDTO1.setClassificationEnName(parentFolderProp.getStringValue(Structures.enName.toString()));
             userArchivingFolderDTO1.setClassificationArName(parentFolderProp.getStringValue(Structures.arName.toString()));
+
             userArchivingFolderDTO.add(userArchivingFolderDTO1);
         }
         return userArchivingFolderDTO;
@@ -227,11 +229,12 @@ public class FileNet {
             userArchivingFolderDTO1.setEnName(folderProp.getStringValue(Structures.enName.toString()));
             userArchivingFolderDTO1.setCode(folderProp.getStringValue(Structures.code.toString()));
             userArchivingFolderDTO1.setLevel(folderProp.getStringValue(Structures.level.toString()));
-            userArchivingFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
-            userArchivingFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
-            userArchivingFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
             userArchivingFolderDTO1.setOwnerID(folderProp.getStringValue(UserArchivingFolder.ownerID.toString()));
             userArchivingFolderDTO1.setOpened(folderProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+
+            userArchivingFolderDTO1.setProgressDuration(parentFolderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            userArchivingFolderDTO1.setIntermediateDuration(parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            userArchivingFolderDTO1.setFinalDetermination(parentFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
             userArchivingFolderDTO1.setClassificationEnName(parentFolderProp.getStringValue(Structures.enName.toString()));
             userArchivingFolderDTO1.setClassificationArName(parentFolderProp.getStringValue(Structures.arName.toString()));
 
