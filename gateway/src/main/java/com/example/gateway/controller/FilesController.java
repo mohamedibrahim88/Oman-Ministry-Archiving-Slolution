@@ -3,6 +3,8 @@ package com.example.gateway.controller;
 import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.enities.CorrespondenceAttribute;
+import com.example.gateway.enities.CrsClassifcation;
+import com.example.gateway.enities.CrsDto;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.example.gateway.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +56,10 @@ public class FilesController {
         fileService.createCorrespondenceDoc(correspondenceAttributes);
     }
 
+    @GetMapping("/crsClassification")
+    public ArrayList<CrsClassifcation> getCrsClassification(){
+        return fileService.getCrsClassification();
+    }
     @PostMapping("/document")
     public void createDocument(){
         assert fileService != null;
@@ -66,8 +72,8 @@ public class FilesController {
     }
 
     @GetMapping("/correspondenceByFileId")
-    public void getCorrespondenceByFileID(){
-        fileService.getCorrespondenceByFileID();
+    public ArrayList<CrsDto> getCorrespondenceByFileID(@RequestParam String fileID){
+        return  fileService.getCorrespondenceByFileID(fileID);
     }
 
     @PutMapping()
@@ -80,5 +86,9 @@ public class FilesController {
         fileService.deleteFileById(folderID);
     }
 
+    @GetMapping("/crsCount")
+    public int getCrsCountByFileID(@RequestParam String fileID) {
+        return fileService.getCrsCountByFileID(fileID);
+    }
 
 }

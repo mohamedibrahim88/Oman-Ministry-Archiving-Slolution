@@ -3,18 +3,21 @@ package com.example.gateway.client;
 import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.constants.*;
-import com.example.gateway.enities.CorrespondenceAttribute;
-import com.example.gateway.enities.UserArchivingFolderAttributes;
-import com.filenet.api.collection.ContentElementList;
-import com.filenet.api.collection.FolderSet;
-import com.filenet.api.collection.StringList;
+import com.example.gateway.enities.*;
+import com.filenet.api.admin.ClassDefinition;
+import com.filenet.api.admin.PropertyDefinition;
+import com.filenet.api.admin.PropertyTemplate;
+import com.filenet.api.collection.*;
 import com.filenet.api.constants.*;
 import com.filenet.api.core.*;
+import com.filenet.api.meta.PropertyDescription;
 import com.filenet.api.property.Properties;
+import com.filenet.api.property.Property;
 import com.filenet.api.query.SearchSQL;
 import com.filenet.api.query.SearchScope;
 import com.filenet.api.util.Id;
 import com.filenet.api.util.UserContext;
+import org.apache.commons.collections4.IteratorUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -91,11 +94,12 @@ public class FileNet {
         p.putValue(UserArchivingFolder.ownerID.toString(), folderProp.getOwnerID());
         p.putValue(Structures.level.toString(),String.valueOf(level));
         p.putValue(UserArchivingFolder.isOpened.toString(),Boolean.TRUE);
+        p.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
         p.putValue(UserArchivingFolder.progressEndDate.toString(), progressEndDate);
         p.putValue(UserArchivingFolder.intermediateEndDate.toString(), intermediateEndDate);
-//        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
-//        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
-//        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
 
         myFolder.save(RefreshMode.REFRESH);
 
@@ -166,7 +170,7 @@ public class FileNet {
                 "[finalDetermination], [intermediateDuration], [level], [progressDuration], " +
                 "[ruleNumber], [ownerID], [isOpened] FROM [" + UserArchivingFolder.userArchivingFolder.toString() +
                 "] WHERE [ownerID] = '" + ownerID + "' AND " +
-                "[isOpened] = " + isOpened + " OPTIONS(TIMELIMIT 180)";
+                "[isOpened] = " + isOpened + " AND [retentionStatus] = '" + RetentionStatus.ACTIVE.toString() + "' OPTIONS(TIMELIMIT 180)";
 
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
@@ -186,10 +190,10 @@ public class FileNet {
             userArchivingFolderDTO1.setLevel(folderProp.getStringValue(Structures.level.toString()));
             userArchivingFolderDTO1.setOwnerID(folderProp.getStringValue(UserArchivingFolder.ownerID.toString()));
             userArchivingFolderDTO1.setOpened(folderProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+            userArchivingFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            userArchivingFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            userArchivingFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
 
-            userArchivingFolderDTO1.setProgressDuration(parentFolderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
-            userArchivingFolderDTO1.setIntermediateDuration(parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
-            userArchivingFolderDTO1.setFinalDetermination(parentFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
             userArchivingFolderDTO1.setClassificationEnName(parentFolderProp.getStringValue(Structures.enName.toString()));
             userArchivingFolderDTO1.setClassificationArName(parentFolderProp.getStringValue(Structures.arName.toString()));
 
@@ -207,7 +211,8 @@ public class FileNet {
                 "[finalDetermination], [intermediateDuration], [level], [progressDuration], " +
                 "[ruleNumber], [ownerID], [isOpened] FROM [" + UserArchivingFolder.userArchivingFolder.toString() +
                 "] WHERE [ownerID] = '" + ownerID + "' AND " +
-                "[FolderName] like '" + filterStr + "%' OPTIONS(TIMELIMIT 180)";
+                "[FolderName] like '" + filterStr + "%' AND [retentionStatus] = '" + RetentionStatus.ACTIVE.toString() + "'" +
+                " OPTIONS(TIMELIMIT 180)";
 
         SearchSQL sql = new SearchSQL(mySQL);
         FolderSet folders = (FolderSet) search.fetchObjects(sql, Integer.valueOf("500"), null, Boolean.TRUE);
@@ -227,10 +232,10 @@ public class FileNet {
             userArchivingFolderDTO1.setLevel(folderProp.getStringValue(Structures.level.toString()));
             userArchivingFolderDTO1.setOwnerID(folderProp.getStringValue(UserArchivingFolder.ownerID.toString()));
             userArchivingFolderDTO1.setOpened(folderProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+            userArchivingFolderDTO1.setProgressDuration(folderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+            userArchivingFolderDTO1.setIntermediateDuration(folderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+            userArchivingFolderDTO1.setFinalDetermination(folderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
 
-            userArchivingFolderDTO1.setProgressDuration(parentFolderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
-            userArchivingFolderDTO1.setIntermediateDuration(parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
-            userArchivingFolderDTO1.setFinalDetermination(parentFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
             userArchivingFolderDTO1.setClassificationEnName(parentFolderProp.getStringValue(Structures.enName.toString()));
             userArchivingFolderDTO1.setClassificationArName(parentFolderProp.getStringValue(Structures.arName.toString()));
 
@@ -241,9 +246,19 @@ public class FileNet {
 
     public void deleteFolderByID(String folderID){
         ObjectStore objectStore = getObjectStore(getCEConnection());
-        Folder folder = Factory.Folder.fetchInstance(objectStore, new Id(folderID), null);
-        folder.delete();
-        folder.save(RefreshMode.NO_REFRESH);
+        Folder paretntFolder = Factory.Folder.fetchInstance(objectStore, new Id(folderID), null);
+        FolderSet folderSet = paretntFolder.get_SubFolders();
+
+        Iterator it = folderSet.iterator();
+
+        while (it.hasNext()){
+            Folder folder = (Folder) it.next();
+            folder.delete();
+            folder.save(RefreshMode.REFRESH);
+         }
+        paretntFolder.delete();
+
+        paretntFolder.save(RefreshMode.REFRESH);
     }
 
     public void updateFolderStatus(String folderID){
@@ -290,10 +305,28 @@ public class FileNet {
             // p.putValue("code",folderProp.getCode());
             p1.putValue(UserArchivingFolder.ownerID.toString(), correspondenceAttribute.get(y).getUserID());
             p1.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+            p1.putValue(UserArchivingFolder.isOpened.toString(),parentProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+            p1.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+            p1.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+            StringList senders1 = Factory.StringList.createList();
+            boolean b0 = senders1.addAll(correspondenceAttribute.get(y).getSenders());
+            p1.putValue(CorrespondenceFolder.Senders.toString(), senders1);
 
-//        StringList owners = Factory.StringList.createList();
+            StringList recievers1 = Factory.StringList.createList();
+            boolean b12 = recievers1.addAll(correspondenceAttribute.get(y).getRecievers());
+            p1.putValue(CorrespondenceFolder.Recievers.toString(), recievers1);
+
+            StringList cc1 = Factory.StringList.createList();
+            boolean b22 = cc1.addAll(correspondenceAttribute.get(y).getCc());
+            p1.putValue(CorrespondenceFolder.CC.toString(), cc1);
+
+            StringList bcc1 = Factory.StringList.createList();
+            boolean b33 = bcc1.addAll(correspondenceAttribute.get(y).getBcc());
+            p1.putValue(CorrespondenceFolder.BCC.toString(), bcc1);
+            //        StringList owners = Factory.StringList.createList();
 //        boolean b = owners.addAll(folderProp.getOwners());
 //        p.putValue("Owners", owners);
+
 
 
             myFolder.save(RefreshMode.REFRESH);
@@ -317,7 +350,7 @@ public class FileNet {
 
 // Create Document
             System.out.println(correspondenceAttribute);
-            String docClass = CorrespondenceDocument.Correspondence.toString();
+            String docClass = correspondenceAttribute.get(y).getClassification();
             try {
                 FileInputStream file = new FileInputStream(f);
                 Document doc = Factory.Document.createInstance(objectStore, docClass);
@@ -340,9 +373,10 @@ public class FileNet {
 //Get and put the doc properties
                 String documentName = correspondenceAttribute.get(y).getCorrespondenceID();
                 Properties p = doc.getProperties();
-                // p.putValue("DocumentTitle",correspondenceAttribute.get(y).getDocTitle());
+                //p.putValue(CorrespondenceDocument.DocumentTitle.toString(),correspondenceAttribute.get(y).getDocTitle());
                 p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
                 p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+                p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.CRS.toString());
                 StringList senders = Factory.StringList.createList();
                 boolean b = senders.addAll(correspondenceAttribute.get(y).getSenders());
                 p.putValue(CorrespondenceFolder.Senders.toString(), senders);
@@ -353,11 +387,25 @@ public class FileNet {
 
                 StringList cc = Factory.StringList.createList();
                 boolean b2 = cc.addAll(correspondenceAttribute.get(y).getCc());
-                p.putValue(CorrespondenceFolder.CC.toString(), cc);
+                p.putValue(CorrespondenceFolder.CC.toString(),cc);
 
                 StringList bcc = Factory.StringList.createList();
                 boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
                 p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
+
+                for (String key : correspondenceAttribute.get(y).getProp().keySet()) {
+                    if (isValidDate(correspondenceAttribute.get(y).getProp().get(key).toString())) {
+                        // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
+                        System.out.println("IS Date :>");
+                        Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
+                        p.putValue(key, date);
+                    } else {
+                        System.out.println("IS NO  Date :>");
+
+                        p.putValue(key, correspondenceAttribute.get(y).getProp().get(key).toString());
+
+                    }
+                }
                 doc.save(RefreshMode.REFRESH);
 
 //Stores above content to the folder
@@ -365,17 +413,21 @@ public class FileNet {
                         AutoUniqueName.AUTO_UNIQUE,
                         documentName,
                         DefineSecurityParentage.DO_NOT_DEFINE_SECURITY_PARENTAGE);
-                rc.save(RefreshMode.REFRESH);
+                rc.save(RefreshMode.NO_REFRESH);
             } catch (Exception e) {
                 System.out.println("Error MSG FROM CROSS:" + e.getMessage());
             }
 ///////////////////////////////UPLOAD ATTACHMENTS////////////////////
-            try {
+
                 for (int i = 0; i < correspondenceAttribute.get(y).getAttachmentsAttributes().size(); i++) {
-                    File attachmentPath = new File(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath());
+                    try {
+                        //C:\\Users\\Administrator\\Desktop\\Maktaby\\maktaby\\TestAttachments\\Test1.txt"
+                        //correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath()
+                    File attachmentPath = new File("//C:\\Users\\Administrator\\Desktop\\Maktaby\\maktaby\\TestAttachments\\Test1.txt");
 
                     FileInputStream file = new FileInputStream(attachmentPath);
                     Document doc = Factory.Document.createInstance(objectStore, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
+                        System.out.println("Attachment Classification  ...." + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
                     if (attachmentPath.exists()) {
                         ContentTransfer contentTransfer = Factory.ContentTransfer.createInstance();
                         ContentElementList contentElementList = Factory.ContentElement.createList();
@@ -394,11 +446,31 @@ public class FileNet {
 //Get and put the doc properties
                     String documentName2 = correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle();
                     Properties p = doc.getProperties();
+                      //  p.putValue(CorrespondenceDocument.DocumentTitle.toString(), correspondenceAttribute.get(y).getDocTitle());
+                        p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+                        p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+                        p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.ATTACHMENT.toString());
+                        StringList senders = Factory.StringList.createList();
+                        boolean b = senders.addAll(correspondenceAttribute.get(y).getSenders());
+                        p.putValue(CorrespondenceFolder.Senders.toString(), senders);
+
+                        StringList recievers = Factory.StringList.createList();
+                        boolean b1 = recievers.addAll(correspondenceAttribute.get(y).getRecievers());
+                        p.putValue(CorrespondenceFolder.Recievers.toString(), recievers);
+
+                        StringList cc = Factory.StringList.createList();
+                        boolean b2 = cc.addAll(correspondenceAttribute.get(y).getCc());
+                        p.putValue(CorrespondenceFolder.CC.toString(), cc);
+
+                        StringList bcc = Factory.StringList.createList();
+                        boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
+                        p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
                     // p.putValue("DocumentTitle",correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle());
                     for (String key : correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().keySet()) {
                         if (isValidDate(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString())) {
                            // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
-                            p.putValue(key, (Date) correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key));
+                            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
+                            p.putValue(key,date);
                         } else {
                             System.out.println("IS NO  Date :>");
 
@@ -419,11 +491,122 @@ public class FileNet {
                             DefineSecurityParentage.DO_NOT_DEFINE_SECURITY_PARENTAGE);
                     rc.save(RefreshMode.REFRESH);
                 }
-            } catch (Exception e) {
-                System.out.println("ERROR MSG FROM ATTACHMENTS" + e.getMessage());
+                    catch (Exception e) {
+                        System.out.println("ERROR MSG FROM ATTACHMENTS" + e.getMessage());
+                    }
             }
         }
     }
+
+    public ArrayList<CrsClassifcation> getCrsClassification() {
+
+        ArrayList<CrsClassifcation> crsClassifcationsList = new ArrayList<>();
+        ArrayList<CrsClassificationAttribute> crsClassificanDefination= new ArrayList<>();
+        ArrayList<CrsClassificationAttribute> crsClassificationDescription= new ArrayList<>();
+        ArrayList<String> superClassProps = new ArrayList<>();
+        ObjectStore objectStore = getObjectStore(getCEConnection());
+
+        ClassDefinition doc = Factory.ClassDefinition.fetchInstance(objectStore,CorrespondenceDocument.Correspondence.toString(),null);
+
+        PropertyDefinitionList superClassDef= doc.get_PropertyDefinitions();
+
+        Iterator itSuper = superClassDef.iterator();
+        while (itSuper.hasNext()) {
+        //CrsClassificationAttribute superClassClassification = new CrsClassificationAttribute();
+
+        PropertyDefinition superClassprop = (PropertyDefinition) itSuper.next();
+
+
+        superClassProps.add(superClassprop.get_SymbolicName());
+
+        }
+
+      ClassDefinitionSet classDefSet=  doc.get_ImmediateSubclassDefinitions();
+
+        Iterator it = classDefSet.iterator();
+        while (it.hasNext()){
+            CrsClassifcation crsClassifcation=  new CrsClassifcation();
+            ArrayList<CrsClassificationAttribute> crsClassificationDefPops = new ArrayList<>();
+            ClassDefinition classDef = (ClassDefinition) it.next();
+
+           PropertyDefinitionList propertyDefList = classDef.get_PropertyDefinitions();
+            Iterator itDef = propertyDefList.iterator();
+           while (itDef.hasNext())
+           {
+               CrsClassificationAttribute crsClassificationDefinition = new CrsClassificationAttribute();
+
+               PropertyDefinition propertyDefinition = (PropertyDefinition) itDef.next();
+               //PropertyTemplate propertyTemplate= propertyDefinition.get_PropertyTemplate();
+               if (!propertyDefinition.get_IsSystemOwned() && !superClassProps.contains(propertyDefinition.get_SymbolicName()) )
+               {
+                crsClassificationDefinition.setDisplayName(propertyDefinition.get_DisplayName());
+                crsClassificationDefinition.setSympolicName(propertyDefinition.get_SymbolicName());
+                crsClassificationDefPops.add(crsClassificationDefinition);
+
+               }
+           }
+
+            crsClassifcation.getCrsClassification().setDisplayName(classDef.get_DisplayName());
+            crsClassifcation.getCrsClassification().setSympolicName(classDef.get_SymbolicName());
+            crsClassifcation.getCrsClassificationProperties().addAll(crsClassificationDefPops);
+            crsClassifcationsList.add(crsClassifcation);
+            System.out.println("Class display name"+ classDef.get_DisplayName());
+
+            System.out.println("object"+ crsClassifcation);
+
+            System.out.println("list  "+ crsClassifcationsList);
+
+            System.out.println("CRS Classification Definition " + crsClassificationDefPops);
+
+
+        }
+        return crsClassifcationsList;
     }
+
+
+    public  ArrayList<CrsDto> getCrsByFileId (String fileID){
+        ArrayList<CrsDto> crsDtos = new ArrayList<>();
+        ObjectStore objectStore= getObjectStore(getCEConnection());
+        Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(fileID), null);
+
+        FolderSet folderSet= parentFolder.get_SubFolders();
+
+        Iterator it = folderSet.iterator();
+
+        while (it.hasNext()){
+            CrsDto crsProp = new CrsDto();
+            Folder folder = (Folder) it.next();
+
+            Properties prop = folder.getProperties();
+
+          crsProp.setReferenceNumber(prop.getStringValue(CorrespondenceFolder.CorrespondenceID.toString()));
+          crsProp.setSubject(prop.getStringValue(CorrespondenceFolder.Subject.toString()));
+          crsProp.setOpened(prop.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+          crsDtos.add(crsProp);
+        }
+
+
+        return  crsDtos;
+    }
+
+    public  int getCrsCountFileId (String fileID){
+        ObjectStore objectStore= getObjectStore(getCEConnection());
+        Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(fileID), null);
+
+        FolderSet folderSet= parentFolder.get_SubFolders();
+        Iterator it = folderSet.iterator();
+         int count = IteratorUtils.size(it);
+//        while (it.hasNext()){
+//            CrsDto crsProp = new CrsDto();
+//            Folder folder = (Folder) it.next();
+//
+//
+//        }
+        return  count;
+    }
+}
+
+
+
 
 

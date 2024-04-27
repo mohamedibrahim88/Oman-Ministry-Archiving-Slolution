@@ -4,6 +4,8 @@ import com.example.gateway.DTOs.ClassificationFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.client.FileNet;
 import com.example.gateway.enities.CorrespondenceAttribute;
+import com.example.gateway.enities.CrsClassifcation;
+import com.example.gateway.enities.CrsDto;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,11 @@ public class FileService {
     public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttributes){
         fileNet.createCorrespondenceDoc(correspondenceAttributes);
     }
+
+    public ArrayList<CrsClassifcation> getCrsClassification()
+    {
+        return fileNet.getCrsClassification();
+    }
     public void createDocument(){
 
     }
@@ -36,8 +43,8 @@ public class FileService {
     public ArrayList<UserArchivingFolderDTO> getUserFoldersByStatus(String ownerID, boolean isOpened){
         return fileNet.getUserFoldersByStatus(ownerID, isOpened);
     }
-    public void getCorrespondenceByFileID(){
-
+    public ArrayList<CrsDto> getCorrespondenceByFileID(String fileId){
+        return fileNet.getCrsByFileId(fileId);
     }
     public void updateFileStatus(String folderID){
         fileNet.updateFolderStatus(folderID);
@@ -50,6 +57,10 @@ public class FileService {
 
     }
 
+    public int getCrsCountByFileID(String fileId)
+    {
+        return fileNet.getCrsCountFileId(fileId);
+    }
 
 
 }

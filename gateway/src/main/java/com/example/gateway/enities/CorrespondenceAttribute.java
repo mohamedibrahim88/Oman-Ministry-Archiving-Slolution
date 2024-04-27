@@ -1,6 +1,7 @@
 package com.example.gateway.enities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CorrespondenceAttribute {
 
@@ -15,12 +16,14 @@ public class CorrespondenceAttribute {
     ArrayList<String> cc;
     ArrayList<String> bcc;
 
+    String classification;
+    HashMap<String,Object> prop = new HashMap<String,Object>();
     ArrayList<AttachmentsAttributes> attachmentsAttributes;
 
     public CorrespondenceAttribute() {
     }
 
-    public CorrespondenceAttribute(String folderID, String userID, String correspondenceID, String subject, String path, String docTitle, ArrayList<String> senders, ArrayList<String> recievers, ArrayList<String> cc, ArrayList<String> bcc, ArrayList<AttachmentsAttributes> attachmentsAttributes) {
+    public CorrespondenceAttribute(String folderID, String userID, String correspondenceID, String subject, String path, String docTitle, ArrayList<String> senders, ArrayList<String> recievers, ArrayList<String> cc, ArrayList<String> bcc, String classification, HashMap<String, Object> prop, ArrayList<AttachmentsAttributes> attachmentsAttributes) {
         this.folderID = folderID;
         this.userID = userID;
         this.correspondenceID = correspondenceID;
@@ -31,6 +34,8 @@ public class CorrespondenceAttribute {
         this.recievers = recievers;
         this.cc = cc;
         this.bcc = bcc;
+        this.classification = classification;
+        this.prop = prop;
         this.attachmentsAttributes = attachmentsAttributes;
     }
 
@@ -114,6 +119,22 @@ public class CorrespondenceAttribute {
         this.bcc = bcc;
     }
 
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
+    }
+
+    public HashMap<String, Object> getProp() {
+        return prop;
+    }
+
+    public void setProp(HashMap<String, Object> prop) {
+        this.prop = prop;
+    }
+
     public ArrayList<AttachmentsAttributes> getAttachmentsAttributes() {
         return attachmentsAttributes;
     }
@@ -135,6 +156,8 @@ public class CorrespondenceAttribute {
                 ", recievers=" + recievers +
                 ", cc=" + cc +
                 ", bcc=" + bcc +
+                ", classification='" + classification + '\'' +
+                ", prop=" + prop +
                 ", attachmentsAttributes=" + attachmentsAttributes +
                 '}';
     }

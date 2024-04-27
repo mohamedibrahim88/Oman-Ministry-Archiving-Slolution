@@ -7,5 +7,7 @@ public enum CorrespondenceDocument {
     BCC,
     CC,
     Subject,
-    CorrespondenceID
+    CorrespondenceID,
+    documentType,
+    DocumentTitle
 }
