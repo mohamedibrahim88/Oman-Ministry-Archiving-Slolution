@@ -1,5 +1,9 @@
 package com.example.gateway.client;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -8,6 +12,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.directory.*;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 @Component
 public class Ldap {
@@ -74,7 +79,7 @@ public class Ldap {
         context.close();
 
     } catch (Exception e) {
-        e.printStackTrace();
+        throw new RuntimeException(e.getMessage());
     }
 
     return  userGroups;
