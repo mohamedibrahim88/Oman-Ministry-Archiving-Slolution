@@ -60,6 +60,7 @@ public class FileNet {
         }catch(Exception e1)
         {
             e1.printStackTrace();
+            throw new RuntimeException(e1.getMessage());
         }
         System.out.println("CE Connection"+ conn);
         return conn ;
@@ -416,6 +417,7 @@ public class FileNet {
                 rc.save(RefreshMode.NO_REFRESH);
             } catch (Exception e) {
                 System.out.println("Error MSG FROM CROSS:" + e.getMessage());
+                throw new RuntimeException(e.getMessage());
             }
 ///////////////////////////////UPLOAD ATTACHMENTS////////////////////
 
@@ -493,6 +495,7 @@ public class FileNet {
                 }
                     catch (Exception e) {
                         System.out.println("ERROR MSG FROM ATTACHMENTS" + e.getMessage());
+                        throw new RuntimeException(e.getMessage());
                     }
             }
         }

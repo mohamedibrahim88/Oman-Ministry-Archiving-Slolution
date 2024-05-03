@@ -8,13 +8,15 @@ import com.example.gateway.enities.CrsDto;
 import com.example.gateway.enities.UserArchivingFolderAttributes;
 import com.example.gateway.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/file")
-//@RequiredArgsConstructor
 public class FilesController {
 
     @Autowired
@@ -25,70 +27,82 @@ public class FilesController {
     }
 
     @GetMapping()
-    public ArrayList<ClassificationFolderDTO> getClassificationsFolderByOwnerID(@RequestParam String organization, @RequestParam String filterStr) {
+    public ResponseEntity<?> getClassificationsFolderByOwnerID(@RequestParam String organization, @RequestParam String filterStr) {
         assert fileService != null;
-        return fileService.getClassificationsFolderByOwnerID(organization, filterStr);
+        List<ClassificationFolderDTO> responseObject = fileService.getClassificationsFolderByOwnerID(organization, filterStr);
+        return new ResponseEntity<>(responseObject, HttpStatus.ACCEPTED);
     }
 
 //    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping()
-    public UserArchivingFolderDTO createArchive(@RequestBody UserArchivingFolderAttributes folderAttributes){
+    public ResponseEntity<?> createArchive(@RequestBody UserArchivingFolderAttributes folderAttributes){
         System.out.println(folderAttributes);
         assert fileService != null;
-        return fileService.createArchive(folderAttributes);
+        UserArchivingFolderDTO responseObject =fileService.createArchive(folderAttributes);
+        return new ResponseEntity<>(responseObject,HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/ownerId")
-    public ArrayList<UserArchivingFolderDTO> GetFilesByOwnerId(@RequestParam String ownerID, @RequestParam String filterStr ){
+    public ResponseEntity<?> GetFilesByOwnerId(@RequestParam String ownerID, @RequestParam String filterStr ){
         assert fileService != null;
-        return fileService.getUserFoldersByOwnerID(ownerID, filterStr);
+        List<UserArchivingFolderDTO> responseObject = fileService.getUserFoldersByOwnerID(ownerID, filterStr);
+        return new ResponseEntity<>(responseObject,HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/byStatus")
-    public ArrayList<UserArchivingFolderDTO> GetFileByStatus(@RequestParam String ownerID, @RequestParam boolean isOpened){
+    public ResponseEntity<?> GetFileByStatus(@RequestParam String ownerID, @RequestParam boolean isOpened){
         assert fileService != null;
-        return fileService.getUserFoldersByStatus(ownerID, isOpened);
+        List<UserArchivingFolderDTO> responseObject = fileService.getUserFoldersByStatus(ownerID, isOpened);
+        return new ResponseEntity<>(responseObject,HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/correspondence")
-    public void createCorrespondenceDoc(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes) {
+    public ResponseEntity<?> createCorrespondenceDoc(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes) {
         assert fileService != null;
         fileService.createCorrespondenceDoc(correspondenceAttributes);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/crsClassification")
-    public ArrayList<CrsClassifcation> getCrsClassification(){
-        return fileService.getCrsClassification();
+    public ResponseEntity<?> getCrsClassification(){
+        List<CrsClassifcation> responseObject = fileService.getCrsClassification();
+        return new ResponseEntity<>(responseObject,HttpStatus.ACCEPTED);
     }
     @PostMapping("/document")
-    public void createDocument(){
+    public ResponseEntity<?> createDocument(){
         assert fileService != null;
         fileService.createDocument();
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/countsByStatus")
-    public void GetNumbersOfCorrespondenceByStatus(){
+    public ResponseEntity<?> GetNumbersOfCorrespondenceByStatus(){
         fileService.GetNumbersOfCorrespondenceByStatus();
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/correspondenceByFileId")
-    public ArrayList<CrsDto> getCorrespondenceByFileID(@RequestParam String fileID){
-        return  fileService.getCorrespondenceByFileID(fileID);
+    public ResponseEntity<?> getCorrespondenceByFileID(@RequestParam String fileID){
+        List<CrsDto> responseObject = fileService.getCorrespondenceByFileID(fileID);
+        return new ResponseEntity<>(responseObject,HttpStatus.ACCEPTED);
     }
 
     @PutMapping()
-    public void updateFileStatus(@RequestParam String folderID){
+    public ResponseEntity<?> updateFileStatus(@RequestParam String folderID){
         fileService.updateFileStatus(folderID);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping()
-    public void deleteFileById(@RequestParam String folderID){
+    public ResponseEntity<?> deleteFileById(@RequestParam String folderID){
         fileService.deleteFileById(folderID);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/crsCount")
-    public int getCrsCountByFileID(@RequestParam String fileID) {
-        return fileService.getCrsCountByFileID(fileID);
+    public ResponseEntity<?> getCrsCountByFileID(@RequestParam String fileID) {
+        int response = fileService.getCrsCountByFileID(fileID);
+        return new ResponseEntity<>(response,HttpStatus.ACCEPTED);
     }
 
 }

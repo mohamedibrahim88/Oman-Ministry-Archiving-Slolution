@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 //@RequiredArgsConstructor
@@ -23,8 +24,7 @@ public class AuthenticationService {
 
         return fileNet.getCEConnection();
     }
-    public ArrayList<String> getUserGroups(String userID , String pass)
-    {
+    public List<String> getUserGroups(String userID , String pass) {
         return ldap.getUserGroups(userID,pass);
     }
 }
