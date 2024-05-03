@@ -14,13 +14,13 @@ public class ExceptionControllerAdvice {
         return null;
     }
 
-    @ExceptionHandler({RuntimeException.class,Exception.class})
+    @ExceptionHandler({RuntimeException.class})
     public ResponseEntity<?> handleCustomException(RuntimeException runtimeException){
         String runtimeExceptionMessage = runtimeException.getMessage();
         return new ResponseEntity<>(runtimeExceptionMessage ,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({RuntimeException.class,Exception.class})
+    @ExceptionHandler({Exception.class})
     public ResponseEntity<?> handleCustomException(Exception exception){
         String exceptionMessage = exception.getMessage();
         return new ResponseEntity<>(exceptionMessage,HttpStatus.INTERNAL_SERVER_ERROR);
