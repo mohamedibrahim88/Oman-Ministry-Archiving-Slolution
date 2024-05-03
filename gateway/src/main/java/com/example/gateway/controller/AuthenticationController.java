@@ -1,5 +1,6 @@
 package com.example.gateway.controller;
 
+import com.example.gateway.DTOs.GeneralResponse;
 import com.example.gateway.client.Ldap;
 import com.example.gateway.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +27,13 @@ public class AuthenticationController {
     @PostMapping()
     public ResponseEntity<?> login(){
         authenticationService.login();
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new GeneralResponse<>("success","200","login success"),HttpStatus.ACCEPTED);
     }
 
     @GetMapping()
     @ResponseBody
     public ResponseEntity<?> getUserGroups(@RequestParam (name="userId") String userID , @RequestParam (name="pass") String pass) {
         List<String> userGroups = authenticationService.getUserGroups(userID,pass);
-        return new ResponseEntity<>(userGroups, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(new GeneralResponse<>("success","200",userGroups), HttpStatus.ACCEPTED);
     }
 }
