@@ -101,7 +101,7 @@ public class FileNet {
         p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
         p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
         p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
-
+        myFolder.set_CmRetentionDate(RetentionConstants.INDEFINITE);
         myFolder.save(RefreshMode.REFRESH);
 
 //        String parentFolderPath =  parentFolder.get_PathName();
@@ -290,14 +290,14 @@ public class FileNet {
 
     /////////////////Create CRS//////////////////////
 
-    public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttribute) {
+    public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttribute, String archiveFolderID) {
         //////////////////CREATE CORRESPONDENCE FOLDER
-
         ObjectStore objectStore = getObjectStore(getCEConnection());
+        Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(archiveFolderID), null);
+        Properties parentProp = parentFolder.getProperties();
+        setCmRetention(parentFolder,null,null,RetentionCases.ArchiveFolder.getCases());
         for (int y = 0; y < correspondenceAttribute.size(); y++) {
-            Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(correspondenceAttribute.get(y).getFolderID()), null);
             Folder myFolder = Factory.Folder.createInstance(objectStore, CorrespondenceFolder.correspondenceFolder.toString());
-            Properties parentProp = parentFolder.getProperties();
             Properties p1 = myFolder.getProperties();
             myFolder.set_Parent(parentFolder);
             myFolder.set_FolderName(correspondenceAttribute.get(y).getCorrespondenceID());
@@ -327,10 +327,7 @@ public class FileNet {
             //        StringList owners = Factory.StringList.createList();
 //        boolean b = owners.addAll(folderProp.getOwners());
 //        p.putValue("Owners", owners);
-
-
-
-            myFolder.save(RefreshMode.REFRESH);
+            setCmRetention(parentFolder,myFolder,null,RetentionCases.CRSFolder.getCases());
 
 
             ///////////////CREATE DOCUMENT
@@ -393,21 +390,20 @@ public class FileNet {
                 StringList bcc = Factory.StringList.createList();
                 boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
                 p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
-
                 for (String key : correspondenceAttribute.get(y).getProp().keySet()) {
                     if (isValidDate(correspondenceAttribute.get(y).getProp().get(key).toString())) {
                         // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
                         System.out.println("IS Date :>");
                         Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
                         p.putValue(key, date);
+                        setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
                     } else {
                         System.out.println("IS NO  Date :>");
-
                         p.putValue(key, correspondenceAttribute.get(y).getProp().get(key).toString());
+                        setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
 
                     }
                 }
-                doc.save(RefreshMode.REFRESH);
 
 //Stores above content to the folder
                 ReferentialContainmentRelationship rc = folder.file(doc,
@@ -473,10 +469,13 @@ public class FileNet {
                            // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
                             Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
                             p.putValue(key,date);
+                            setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
+
                         } else {
                             System.out.println("IS NO  Date :>");
 
                             p.putValue(key, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+                            setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
 
                         }
                     }
@@ -484,7 +483,6 @@ public class FileNet {
 //                    p.putValue(correspondenceAttribute.getAttachmentsAttributes().get(i).getProp()., correspondenceAttribute.getCorrespondenceID());
 //                }
 
-                    doc.save(RefreshMode.REFRESH);
 
 //Stores above content to the folder
                     ReferentialContainmentRelationship rc = folder.file(doc,
@@ -606,6 +604,85 @@ public class FileNet {
 //
 //        }
         return  count;
+    }
+
+    private void setCmRetention (Folder parentFolder, Folder crsFolder,Document doc, int cases) {
+
+        Properties parentFolderProp = parentFolder.getProperties();
+        String finalDetermination = parentFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString());
+        String progressDuration =  parentFolderProp.getStringValue(ClassificationFolder.progressDuration.toString());
+        String intermediateDuration =  parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString());
+        RetentionEndDates retentionEndDates = getRetentionEndDate(progressDuration,intermediateDuration);
+        if (cases == RetentionCases.ArchiveFolder.getCases()) {
+            if (finalDetermination.equals(FinalDetermination.SELECTION.toString())) {
+                parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
+                parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
+                parentFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+                parentFolder.save(RefreshMode.REFRESH);
+            }
+            if (finalDetermination.equals(FinalDetermination.DELETE.toString())) {
+                parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
+                parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
+                parentFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+                parentFolder.save(RefreshMode.REFRESH);
+            }
+            if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
+                parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
+                parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
+                parentFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                crsFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                parentFolder.save(RefreshMode.REFRESH);
+            }
+        }
+       else if (cases == RetentionCases.CRSFolder.getCases())
+        {
+            Properties crsProp = crsFolder.getProperties();
+            if (finalDetermination.equals(FinalDetermination.SELECTION.toString())) {
+                crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
+                crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
+                crsFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+                crsFolder.save(RefreshMode.REFRESH);
+            }
+            if (finalDetermination.equals(FinalDetermination.DELETE.toString())) {
+                crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
+                crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
+                crsFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+                crsFolder.save(RefreshMode.REFRESH);
+            }
+            if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
+                crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
+                crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
+                crsFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                crsFolder.save(RefreshMode.REFRESH);
+            }
+
+        } else if (cases == RetentionCases.Document.getCases()) {
+            Properties docProp = doc.getProperties();
+            if (finalDetermination.equals(FinalDetermination.SELECTION.toString())){
+                doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+                doc.save(RefreshMode.REFRESH);
+            } else if (finalDetermination.equals(FinalDetermination.DELETE.toString())) {
+                doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+                doc.save(RefreshMode.REFRESH);
+            } else if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
+                doc.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                doc.save(RefreshMode.REFRESH);
+            }
+
+        }
+
+    }
+
+    private RetentionEndDates getRetentionEndDate(String progressDuration, String intermediateDuration)
+    {
+        RetentionEndDates retentionEndDates = new RetentionEndDates();
+        Calendar  intermediateCalendar = Calendar.getInstance();
+        Calendar progressCalendar = Calendar.getInstance();
+        intermediateCalendar.add(Calendar.YEAR, Integer.parseInt(progressDuration.split("\\.")[0])+Integer.parseInt(intermediateDuration.split("\\.")[0]));
+        retentionEndDates.setIntermediateEndDate(intermediateCalendar.getTime());
+        progressCalendar.add(Calendar.YEAR,Integer.parseInt(progressDuration.split("\\.")[0]));
+        retentionEndDates.setProgressEndDate(progressCalendar.getTime());
+        return retentionEndDates;
     }
 }
 

@@ -26,8 +26,8 @@ public class FileService {
     public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderAttributes){
             return fileNet.createArchive(folderAttributes);
     }
-    public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttributes){
-        fileNet.createCorrespondenceDoc(correspondenceAttributes);
+    public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttributes,String folderID){
+        fileNet.createCorrespondenceDoc(correspondenceAttributes,folderID);
     }
 
     public ArrayList<CrsClassifcation> getCrsClassification()
