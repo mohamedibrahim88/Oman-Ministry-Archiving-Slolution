@@ -58,9 +58,9 @@ public class FilesController {
     }
 
     @PostMapping("/correspondence")
-    public ResponseEntity<?> createCorrespondenceDoc(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes) {
+    public ResponseEntity<?> createCorrespondenceDoc(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes,@RequestParam String folderID) {
         assert fileService != null;
-        fileService.createCorrespondenceDoc(correspondenceAttributes);
+        fileService.createCorrespondenceDoc(correspondenceAttributes,folderID);
         return new ResponseEntity<>(new GeneralResponse<>("success","200","login success"),HttpStatus.ACCEPTED);
     }
 
