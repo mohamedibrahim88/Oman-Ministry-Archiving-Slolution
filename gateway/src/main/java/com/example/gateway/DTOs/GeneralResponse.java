@@ -13,4 +13,10 @@ public class GeneralResponse<T> {
     private String code;
     private T data;
 
+//    public GeneralResponse(String message , String code , T data){
+//        this.message=message;
+//        this.code=code;
+//        this.data=data;
+//    }
+
 }

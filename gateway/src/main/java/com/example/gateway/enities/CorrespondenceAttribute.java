@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CorrespondenceAttribute {
-
-    String folderID;
     String userID;
     String correspondenceID;
     String subject;
@@ -23,8 +21,7 @@ public class CorrespondenceAttribute {
     public CorrespondenceAttribute() {
     }
 
-    public CorrespondenceAttribute(String folderID, String userID, String correspondenceID, String subject, String path, String docTitle, ArrayList<String> senders, ArrayList<String> recievers, ArrayList<String> cc, ArrayList<String> bcc, String classification, HashMap<String, Object> prop, ArrayList<AttachmentsAttributes> attachmentsAttributes) {
-        this.folderID = folderID;
+    public CorrespondenceAttribute( String userID, String correspondenceID, String subject, String path, String docTitle, ArrayList<String> senders, ArrayList<String> recievers, ArrayList<String> cc, ArrayList<String> bcc, String classification, HashMap<String, Object> prop, ArrayList<AttachmentsAttributes> attachmentsAttributes) {
         this.userID = userID;
         this.correspondenceID = correspondenceID;
         this.subject = subject;
@@ -39,13 +36,7 @@ public class CorrespondenceAttribute {
         this.attachmentsAttributes = attachmentsAttributes;
     }
 
-    public String getFolderID() {
-        return folderID;
-    }
 
-    public void setFolderID(String folderID) {
-        this.folderID = folderID;
-    }
 
     public String getUserID() {
         return userID;
@@ -146,7 +137,6 @@ public class CorrespondenceAttribute {
     @Override
     public String toString() {
         return "CorrespondenceAttribute{" +
-                "folderID='" + folderID + '\'' +
                 ", userID='" + userID + '\'' +
                 ", correspondenceID='" + correspondenceID + '\'' +
                 ", subject='" + subject + '\'' +
