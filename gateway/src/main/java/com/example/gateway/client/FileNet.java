@@ -83,11 +83,11 @@ public class FileNet {
         myFolder.set_FolderName(folderProp.getArName()+"-"+folderProp.getCode());
 
         int level = Integer.parseInt(parentProp.getStringValue(Structures.level.toString()).split("\\.")[0]) + 1;
-        Calendar myCalendar = Calendar.getInstance();
-        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.progressDuration.toString()).split("\\.")[0]));
-        Date progressEndDate = myCalendar.getTime();
-        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()).split("\\.")[0]));
-        Date intermediateEndDate = myCalendar.getTime();
+//        Calendar myCalendar = Calendar.getInstance();
+//        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.progressDuration.toString()).split("\\.")[0]));
+//        Date progressEndDate = myCalendar.getTime();
+//        myCalendar.add(Calendar.YEAR, Integer.parseInt(parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()).split("\\.")[0]));
+//        Date intermediateEndDate = myCalendar.getTime();
 
         p.putValue(Structures.code.toString(),folderProp.getCode());
         p.putValue(Structures.arName.toString(), folderProp.getArName());
@@ -96,8 +96,6 @@ public class FileNet {
         p.putValue(Structures.level.toString(),String.valueOf(level));
         p.putValue(UserArchivingFolder.isOpened.toString(),Boolean.TRUE);
         p.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
-        p.putValue(UserArchivingFolder.progressEndDate.toString(), progressEndDate);
-        p.putValue(UserArchivingFolder.intermediateEndDate.toString(), intermediateEndDate);
         p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
         p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
         p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
