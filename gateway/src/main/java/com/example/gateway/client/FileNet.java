@@ -627,8 +627,8 @@ public class FileNet {
             if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
                 parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
-                parentFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
-                crsFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+//                parentFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                parentFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 parentFolder.save(RefreshMode.REFRESH);
             }
         }
@@ -650,7 +650,9 @@ public class FileNet {
             if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
                 crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
-                crsFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+//                crsFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                crsFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+
                 crsFolder.save(RefreshMode.REFRESH);
             }
 
@@ -663,7 +665,9 @@ public class FileNet {
                 doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 doc.save(RefreshMode.REFRESH);
             } else if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
-                doc.set_CmRetentionDate(RetentionConstants.PERMANENT);
+               // doc.set_CmRetentionDate(RetentionConstants.PERMANENT);
+                doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
+
                 doc.save(RefreshMode.REFRESH);
             }
 
@@ -676,9 +680,9 @@ public class FileNet {
         RetentionEndDates retentionEndDates = new RetentionEndDates();
         Calendar  intermediateCalendar = Calendar.getInstance();
         Calendar progressCalendar = Calendar.getInstance();
-        intermediateCalendar.add(Calendar.YEAR, Integer.parseInt(progressDuration.split("\\.")[0])+Integer.parseInt(intermediateDuration.split("\\.")[0]));
+        intermediateCalendar.add(Calendar.DATE, Integer.parseInt(progressDuration.split("\\.")[0])+Integer.parseInt(intermediateDuration.split("\\.")[0]));
         retentionEndDates.setIntermediateEndDate(intermediateCalendar.getTime());
-        progressCalendar.add(Calendar.YEAR,Integer.parseInt(progressDuration.split("\\.")[0]));
+        progressCalendar.add(Calendar.DATE,Integer.parseInt(progressDuration.split("\\.")[0]));
         retentionEndDates.setProgressEndDate(progressCalendar.getTime());
         return retentionEndDates;
     }
