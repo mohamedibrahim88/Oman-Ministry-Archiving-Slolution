@@ -52,7 +52,7 @@ public class FileNet {
             if (conn == null){
                 conn = Factory.Connection.getConnection(ceURI);
 
-                Subject subject = UserContext.createSubject(conn, username, password, null);
+                Subject subject = UserContext.createSubject(conn, username, password, "FileNetP8WSI");
                 UserContext uc = UserContext.get();
 
                 uc.pushSubject(subject);
@@ -419,7 +419,7 @@ public class FileNet {
                     try {
                         //C:\\Users\\Administrator\\Desktop\\Maktaby\\maktaby\\TestAttachments\\Test1.txt"
                         //correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath()
-                    File attachmentPath = new File("//C:\\Users\\Administrator\\Desktop\\Maktaby\\maktaby\\TestAttachments\\Test1.txt");
+                    File attachmentPath = new File(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath());
 
                     FileInputStream file = new FileInputStream(attachmentPath);
                     Document doc = Factory.Document.createInstance(objectStore, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());

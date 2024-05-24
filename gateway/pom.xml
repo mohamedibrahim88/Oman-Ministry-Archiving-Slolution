@@ -5,12 +5,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.0</version>
+		<version>1.5.22.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>gateway</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
 	<name>gateway</name>
 	<description>gateway</description>
 	<properties>
@@ -21,6 +22,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -120,19 +122,32 @@
 			<artifactId>xlxp</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-        <dependency>
-            <groupId>jakarta.activation</groupId>
-            <artifactId>jakarta.activation-api</artifactId>
-        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>jakarta.activation</groupId>-->
+<!--            <artifactId>jakarta.activation-api</artifactId>-->
+<!--        </dependency>-->
 
 		<dependency>
 			<groupId>com.utils</groupId>
 			<artifactId>utils</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>jakarta.activation</groupId>-->
+<!--			<artifactId>jakarta.activation-api</artifactId>-->
+<!--		</dependency>-->
+
 		<dependency>
-			<groupId>jakarta.activation</groupId>
-			<artifactId>jakarta.activation-api</artifactId>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
     </dependencies>
