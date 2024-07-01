@@ -40,6 +40,9 @@ public class FileService {
     public ArrayList<UserArchivingFolderDTO> getUserFoldersByOwnerID(String ownerID, String filterStr){
         return fileNet.getUserFoldersByOwnerID(ownerID, filterStr);
     }
+
+
+
     public ArrayList<UserArchivingFolderDTO> getUserFoldersByStatus(String ownerID, boolean isOpened){
         return fileNet.getUserFoldersByStatus(ownerID, isOpened);
     }
@@ -49,6 +52,12 @@ public class FileService {
     public void updateFileStatus(String folderID){
         fileNet.updateFolderStatus(folderID);
     }
+
+    public void updateFileName(String folderID, String folderName){
+        fileNet.updateFolderName(folderID, folderName);
+    }
+
+
     public void deleteFileById(String folderID){
         fileNet.deleteFolderByID(folderID);
     }

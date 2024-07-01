@@ -268,6 +268,15 @@ public class FileNet {
         folder.save(RefreshMode.NO_REFRESH);
     }
 
+    public void updateFolderName(String folderID, String folderName){
+        ObjectStore objectStore = getObjectStore(getCEConnection());
+        Folder folder = Factory.Folder.fetchInstance(objectStore, new Id(folderID), null);
+        Properties p = folder.getProperties();
+        folder.set_FolderName(folderName);
+        //p.putValue(UserArchivingFolder.isOpened.toString(), Boolean.FALSE);
+        folder.save(RefreshMode.NO_REFRESH);
+    }
+
     public  String getMimeType(String fileUrl) {
 
         MimetypesFileTypeMap mimeTypesMap  =  new MimetypesFileTypeMap();

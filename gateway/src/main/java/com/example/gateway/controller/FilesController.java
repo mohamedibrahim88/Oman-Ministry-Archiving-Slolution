@@ -94,6 +94,12 @@ public class FilesController {
         return new ResponseEntity<>(new GeneralResponse<>("success","200","login success"),HttpStatus.ACCEPTED);
     }
 
+    @PutMapping("/updateFolderName")
+    public ResponseEntity<?> updateFileStatus(@RequestParam String folderID, @RequestParam String folderName){
+        fileService.updateFileName(folderID, folderName);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping()
     public ResponseEntity<?> deleteFileById(@RequestParam String folderID){
         fileService.deleteFileById(folderID);
