@@ -95,11 +95,11 @@ public class FileNet {
         p.putValue(UserArchivingFolder.ownerID.toString(), folderProp.getOwnerID());
         p.putValue(Structures.level.toString(),String.valueOf(level));
         p.putValue(UserArchivingFolder.isOpened.toString(),Boolean.TRUE);
-        p.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
-        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
-        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
-        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
-        myFolder.set_CmRetentionDate(RetentionConstants.INDEFINITE);
+//        p.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
+//        p.putValue(ClassificationFolder.progressDuration.toString(),parentProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+//        p.putValue(ClassificationFolder.intermediateDuration.toString(),parentProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+//        p.putValue(ClassificationFolder.finalDetermination.toString(),parentProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+//        myFolder.set_CmRetentionDate(RetentionConstants.INDEFINITE);
         myFolder.save(RefreshMode.REFRESH);
 
 //        String parentFolderPath =  parentFolder.get_PathName();
@@ -293,7 +293,17 @@ public class FileNet {
         ObjectStore objectStore = getObjectStore(getCEConnection());
         Folder parentFolder = Factory.Folder.fetchInstance(objectStore, new Id(archiveFolderID), null);
         Properties parentProp = parentFolder.getProperties();
+        Properties leafFolderProp = parentFolder.get_Parent().getProperties();
+
+        parentProp.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
+        parentProp.putValue(ClassificationFolder.progressDuration.toString(),leafFolderProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+        parentProp.putValue(ClassificationFolder.intermediateDuration.toString(),leafFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+        parentProp.putValue(ClassificationFolder.finalDetermination.toString(),leafFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+        parentFolder.save(RefreshMode.REFRESH);
+
+
         setCmRetention(parentFolder,null,null,RetentionCases.ArchiveFolder.getCases());
+
         for (int y = 0; y < correspondenceAttribute.size(); y++) {
             Folder myFolder = Factory.Folder.createInstance(objectStore, CorrespondenceFolder.correspondenceFolder.toString());
             Properties p1 = myFolder.getProperties();
@@ -347,6 +357,7 @@ public class FileNet {
 // Create Document
             System.out.println(correspondenceAttribute);
             String docClass = correspondenceAttribute.get(y).getClassification();
+            System.out.println("get doc Class: " + docClass);
             try {
                 FileInputStream file = new FileInputStream(f);
                 Document doc = Factory.Document.createInstance(objectStore, docClass);
@@ -362,14 +373,12 @@ public class FileNet {
                     doc.set_MimeType(getMimeType(correspondenceAttribute.get(y).getPath()));
 
                 }
-
-
 //Check-in the doc
                 doc.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
 //Get and put the doc properties
                 String documentName = correspondenceAttribute.get(y).getCorrespondenceID();
                 Properties p = doc.getProperties();
-                //p.putValue(CorrespondenceDocument.DocumentTitle.toString(),correspondenceAttribute.get(y).getDocTitle());
+                p.putValue(CorrespondenceDocument.DocumentTitle.toString(),correspondenceAttribute.get(y).getDocTitle());
                 p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
                 p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
                 p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.CRS.toString());
@@ -402,7 +411,6 @@ public class FileNet {
 
                     }
                 }
-
 //Stores above content to the folder
                 ReferentialContainmentRelationship rc = folder.file(doc,
                         AutoUniqueName.AUTO_UNIQUE,
@@ -411,6 +419,8 @@ public class FileNet {
                 rc.save(RefreshMode.NO_REFRESH);
             } catch (Exception e) {
                 System.out.println("Error MSG FROM CROSS:" + e.getMessage());
+                int size = e.getStackTrace().length - 1;
+                System.out.println(e.getStackTrace()[size - 1].getLineNumber());
                 throw new RuntimeException(e.getMessage());
             }
 ///////////////////////////////UPLOAD ATTACHMENTS////////////////////
@@ -424,7 +434,7 @@ public class FileNet {
                     FileInputStream file = new FileInputStream(attachmentPath);
                     Document doc = Factory.Document.createInstance(objectStore, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
                         System.out.println("Attachment Classification  ...." + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
-                    if (attachmentPath.exists()) {
+                        if (attachmentPath.exists()) {
                         ContentTransfer contentTransfer = Factory.ContentTransfer.createInstance();
                         ContentElementList contentElementList = Factory.ContentElement.createList();
 
@@ -442,7 +452,7 @@ public class FileNet {
 //Get and put the doc properties
                     String documentName2 = correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle();
                     Properties p = doc.getProperties();
-                      //  p.putValue(CorrespondenceDocument.DocumentTitle.toString(), correspondenceAttribute.get(y).getDocTitle());
+                        p.putValue(CorrespondenceDocument.DocumentTitle.toString(), correspondenceAttribute.get(y).getDocTitle());
                         p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
                         p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
                         p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.ATTACHMENT.toString());
@@ -461,27 +471,30 @@ public class FileNet {
                         StringList bcc = Factory.StringList.createList();
                         boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
                         p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
-                    // p.putValue("DocumentTitle",correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle());
-                    for (String key : correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().keySet()) {
-                        if (isValidDate(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString())) {
-                           // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
-                            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
-                            p.putValue(key,date);
-                            setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
+                        p.putValue("DocumentTitle",correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle());
+                        System.out.println("prop : " + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp());
 
-                        } else {
-                            System.out.println("IS NO  Date :>");
+                        for (String key : correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().keySet()) {
+                            System.out.println("value to check :" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
 
-                            p.putValue(key, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
-                            setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
+                            if (isValidDate(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString())) {
+//                                 System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
+                                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+                                p.putValue(key,date);
+                                setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
 
+                            } else {
+                                System.out.println("IS NO  Date :>");
+
+                                p.putValue(key, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+                                setCmRetention(parentFolder,myFolder,doc,RetentionCases.Document.getCases());
+
+                            }
                         }
-                    }
+
 //                for (int j=0; j<correspondenceAttribute.getAttachmentsAttributes().get(i).getProp().size();j++) {
 //                    p.putValue(correspondenceAttribute.getAttachmentsAttributes().get(i).getProp()., correspondenceAttribute.getCorrespondenceID());
 //                }
-
-
 //Stores above content to the folder
                     ReferentialContainmentRelationship rc = folder.file(doc,
                             AutoUniqueName.AUTO_UNIQUE,
@@ -612,19 +625,19 @@ public class FileNet {
         String intermediateDuration =  parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString());
         RetentionEndDates retentionEndDates = getRetentionEndDate(progressDuration,intermediateDuration);
         if (cases == RetentionCases.ArchiveFolder.getCases()) {
-            if (finalDetermination.equals(FinalDetermination.SELECTION.toString())) {
+            if (finalDetermination.equals(FinalDetermination.SELECTION.toString()) || finalDetermination.equals("انتقاء")) {
                 parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
                 parentFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 parentFolder.save(RefreshMode.REFRESH);
             }
-            if (finalDetermination.equals(FinalDetermination.DELETE.toString())) {
+            if (finalDetermination.equals(FinalDetermination.DELETE.toString()) || finalDetermination.equals("اتلاف")) {
                 parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
                 parentFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 parentFolder.save(RefreshMode.REFRESH);
             }
-            if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
+            if (finalDetermination.equals(FinalDetermination.PERMANENT.toString()) || finalDetermination.equals("حفظ دائم")) {
                 parentFolderProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 parentFolderProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
 //                parentFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
@@ -635,19 +648,19 @@ public class FileNet {
        else if (cases == RetentionCases.CRSFolder.getCases())
         {
             Properties crsProp = crsFolder.getProperties();
-            if (finalDetermination.equals(FinalDetermination.SELECTION.toString())) {
+            if (finalDetermination.equals(FinalDetermination.SELECTION.toString()) || finalDetermination.equals("انتقاء")) {
                 crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
                 crsFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 crsFolder.save(RefreshMode.REFRESH);
             }
-            if (finalDetermination.equals(FinalDetermination.DELETE.toString())) {
+            if (finalDetermination.equals(FinalDetermination.DELETE.toString()) || finalDetermination.equals("اتلاف")) {
                 crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
                 crsFolder.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 crsFolder.save(RefreshMode.REFRESH);
             }
-            if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
+            if (finalDetermination.equals(FinalDetermination.PERMANENT.toString()) || finalDetermination.equals("حفظ دائم")) {
                 crsProp.putValue(UserArchivingFolder.progressEndDate.toString(),retentionEndDates.getProgressEndDate());
                 crsProp.putValue(UserArchivingFolder.intermediateEndDate.toString(),retentionEndDates.getIntermediateEndDate());
 //                crsFolder.set_CmRetentionDate(RetentionConstants.PERMANENT);
@@ -658,13 +671,13 @@ public class FileNet {
 
         } else if (cases == RetentionCases.Document.getCases()) {
             Properties docProp = doc.getProperties();
-            if (finalDetermination.equals(FinalDetermination.SELECTION.toString())){
+            if (finalDetermination.equals(FinalDetermination.SELECTION.toString()) || finalDetermination.equals("انتقاء")){
                 doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 doc.save(RefreshMode.REFRESH);
-            } else if (finalDetermination.equals(FinalDetermination.DELETE.toString())) {
+            } else if (finalDetermination.equals(FinalDetermination.DELETE.toString()) || finalDetermination.equals("اتلاف")) {
                 doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
                 doc.save(RefreshMode.REFRESH);
-            } else if (finalDetermination.equals(FinalDetermination.PERMANENT.toString())) {
+            } else if (finalDetermination.equals(FinalDetermination.PERMANENT.toString()) || finalDetermination.equals("حفظ دائم")) {
                // doc.set_CmRetentionDate(RetentionConstants.PERMANENT);
                 doc.set_CmRetentionDate(retentionEndDates.getIntermediateEndDate());
 
