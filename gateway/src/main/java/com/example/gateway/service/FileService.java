@@ -1,12 +1,10 @@
 package com.example.gateway.service;
 
 import com.example.gateway.DTOs.ClassificationFolderDTO;
+import com.example.gateway.DTOs.CorrespondenceFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.client.FileNet;
-import com.example.gateway.enities.CorrespondenceAttribute;
-import com.example.gateway.enities.CrsClassifcation;
-import com.example.gateway.enities.CrsDto;
-import com.example.gateway.enities.UserArchivingFolderAttributes;
+import com.example.gateway.enities.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +24,23 @@ public class FileService {
     public UserArchivingFolderDTO createArchive(UserArchivingFolderAttributes folderAttributes){
             return fileNet.createArchive(folderAttributes);
     }
+
+    public CorrespondenceFolderDTO createCRSFolder(CorrespondenceFolderAttributes folderAttributes){
+        return fileNet.createCRSFolder(folderAttributes);
+    }
+
+    public CorrespondenceFolderDTO isCRSFolderCreated(CorrespondenceFolderAttributes folderAttributes){
+        return fileNet.isCRSFolderCreated(folderAttributes);
+    }
+
+    public void closeCRSFolder(ArrayList<CorrespondenceAttribute> correspondenceAttributes,String correspondenceFolderID){
+        fileNet.closeCRSFolder(correspondenceAttributes,correspondenceFolderID);
+    }
+
+    public void addCRSDocuments(ArrayList<CorrespondenceAttribute> correspondenceAttributes,String correspondenceFolderID){
+        fileNet.addCRSDocuments(correspondenceAttributes,correspondenceFolderID);
+    }
+
     public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttributes,String folderID){
         fileNet.createCorrespondenceDoc(correspondenceAttributes,folderID);
     }

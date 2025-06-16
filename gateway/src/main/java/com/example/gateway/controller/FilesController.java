@@ -1,12 +1,10 @@
 package com.example.gateway.controller;
 
 import com.example.gateway.DTOs.ClassificationFolderDTO;
+import com.example.gateway.DTOs.CorrespondenceFolderDTO;
 import com.example.gateway.DTOs.GeneralResponse;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
-import com.example.gateway.enities.CorrespondenceAttribute;
-import com.example.gateway.enities.CrsClassifcation;
-import com.example.gateway.enities.CrsDto;
-import com.example.gateway.enities.UserArchivingFolderAttributes;
+import com.example.gateway.enities.*;
 import com.example.gateway.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,6 +41,23 @@ public class FilesController {
         return new ResponseEntity<>(new GeneralResponse<>("success","200",responseObject),HttpStatus.ACCEPTED);
     }
 
+    @PostMapping("/createCRSFolder")
+    public ResponseEntity<?> createCRSFolder(@RequestBody CorrespondenceFolderAttributes folderAttributes){
+        System.out.println(folderAttributes);
+        assert fileService != null;
+        CorrespondenceFolderDTO responseObject =fileService.createCRSFolder(folderAttributes);
+        return new ResponseEntity<>(new GeneralResponse<>("success","200",responseObject),HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/isCRSFolderCreated")
+    public ResponseEntity<?> isCRSFolderCreated(@RequestBody CorrespondenceFolderAttributes folderAttributes){
+        System.out.println(folderAttributes);
+        assert fileService != null;
+        CorrespondenceFolderDTO responseObject =fileService.isCRSFolderCreated(folderAttributes);
+        return new ResponseEntity<>(new GeneralResponse<>("success","200",responseObject),HttpStatus.ACCEPTED);
+    }
+
+
     @GetMapping("/ownerId")
     public ResponseEntity<?> GetFilesByOwnerId(@RequestParam String ownerID, @RequestParam String filterStr ){
         assert fileService != null;
@@ -55,6 +70,20 @@ public class FilesController {
         assert fileService != null;
         List<UserArchivingFolderDTO> responseObject = fileService.getUserFoldersByStatus(ownerID, isOpened);
         return new ResponseEntity<>(new GeneralResponse<>("success","200",responseObject),HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/closeCRSFolder")
+    public ResponseEntity<?> closeCRSFolder(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes,@RequestParam String correspondenceFolderID) {
+        assert fileService != null;
+        fileService.closeCRSFolder(correspondenceAttributes,correspondenceFolderID);
+        return new ResponseEntity<>(new GeneralResponse<>("success","200","login success"),HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/addCRSDocuments")
+    public ResponseEntity<?> addCRSDocuments(@RequestBody ArrayList<CorrespondenceAttribute> correspondenceAttributes,@RequestParam String correspondenceFolderID) {
+        assert fileService != null;
+        fileService.addCRSDocuments(correspondenceAttributes,correspondenceFolderID);
+        return new ResponseEntity<>(new GeneralResponse<>("success","200","login success"),HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/correspondence")

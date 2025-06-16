@@ -1,18 +1,16 @@
 package com.example.gateway.client;
 
 import com.example.gateway.DTOs.ClassificationFolderDTO;
+import com.example.gateway.DTOs.CorrespondenceFolderDTO;
 import com.example.gateway.DTOs.UserArchivingFolderDTO;
 import com.example.gateway.constants.*;
 import com.example.gateway.enities.*;
 import com.filenet.api.admin.ClassDefinition;
 import com.filenet.api.admin.PropertyDefinition;
-import com.filenet.api.admin.PropertyTemplate;
 import com.filenet.api.collection.*;
 import com.filenet.api.constants.*;
 import com.filenet.api.core.*;
-import com.filenet.api.meta.PropertyDescription;
 import com.filenet.api.property.Properties;
-import com.filenet.api.property.Property;
 import com.filenet.api.query.SearchSQL;
 import com.filenet.api.query.SearchScope;
 import com.filenet.api.util.Id;
@@ -287,6 +285,514 @@ public class FileNet {
     }
 
     /////////////////Create CRS//////////////////////
+
+    public CorrespondenceFolderDTO createCRSFolder(CorrespondenceFolderAttributes folderProp){
+
+        ObjectStore objectStore = getObjectStore(getCEConnection());
+        Folder parentFolder = Factory.Folder.fetchInstance(objectStore,new Id(folderProp.getParentID()),null);
+        Folder myFolder = Factory.Folder.createInstance(objectStore,CorrespondenceFolder.correspondenceFolder.toString());
+        Properties parentProp = parentFolder.getProperties();
+        Properties p = myFolder.getProperties();
+        myFolder.set_Parent(parentFolder);
+        myFolder.set_FolderName(folderProp.getCrsFolderName());
+
+        int level = Integer.parseInt(parentProp.getStringValue(Structures.level.toString()).split("\\.")[0]) + 1;
+
+        p.putValue(Structures.enName.toString(),folderProp.getCrsFolderName());
+        p.putValue(UserArchivingFolder.ownerID.toString(), parentProp.getStringValue(UserArchivingFolder.ownerID.toString()));
+        p.putValue(Structures.level.toString(),String.valueOf(level));
+        p.putValue(UserArchivingFolder.isOpened.toString(),Boolean.TRUE);
+
+        myFolder.save(RefreshMode.REFRESH);
+
+        String folderID = myFolder.get_Id().toString();
+        folderID = folderID.replace("{","");
+        folderID = folderID.replace("}", "");
+
+        CorrespondenceFolderDTO correspondenceFolderDTO = new CorrespondenceFolderDTO();
+        correspondenceFolderDTO.setFolderID(folderID);
+        correspondenceFolderDTO.setFolderName(folderProp.getCrsFolderName());
+        return correspondenceFolderDTO;
+    }
+
+    public CorrespondenceFolderDTO isCRSFolderCreated(CorrespondenceFolderAttributes folderProp){
+
+        ObjectStore objectStore = getObjectStore(getCEConnection());
+        Folder parentFolder = Factory.Folder.fetchInstance(objectStore,new Id(folderProp.getParentID()),null);
+
+        FolderSet subFolders =  parentFolder.get_SubFolders();
+        Iterator<Folder> i = subFolders.iterator();
+        while (i.hasNext()){
+           Folder f = i.next();
+           if(Objects.equals(f.get_FolderName(), folderProp.getCrsFolderName())){
+               //folder found
+               String folderID = f.get_Id().toString();
+               folderID = folderID.replace("{","");
+               folderID = folderID.replace("}", "");
+
+               CorrespondenceFolderDTO correspondenceFolderDTO = new CorrespondenceFolderDTO();
+               correspondenceFolderDTO.setFolderID(folderID);
+               correspondenceFolderDTO.setFolderName(folderProp.getCrsFolderName());
+               return correspondenceFolderDTO;
+           }else {
+               continue;
+           }
+        }
+        CorrespondenceFolderDTO correspondenceFolderDTO = new CorrespondenceFolderDTO();
+        correspondenceFolderDTO.setFolderID("Folder Not Found");
+        correspondenceFolderDTO.setFolderName(folderProp.getCrsFolderName());
+        return correspondenceFolderDTO;
+
+
+    }
+
+
+    public void closeCRSFolder(ArrayList<CorrespondenceAttribute> correspondenceAttribute, String correspondenceFolderID) {
+        //////////////////CREATE CORRESPONDENCE FOLDER
+        ObjectStore objectStore = getObjectStore(getCEConnection());
+        Folder correspondenceFolder = Factory.Folder.fetchInstance(objectStore, new Id(correspondenceFolderID), null);
+        Folder archiveFolder = correspondenceFolder.get_Parent();
+        Folder classificationFolder = archiveFolder.get_Parent();
+        String correspondenceFolderName = correspondenceFolder.get_FolderName();
+        Properties correspondenceProp = correspondenceFolder.getProperties();
+        Properties archiveProp = archiveFolder.getProperties();
+        Properties classificationProp = classificationFolder.getProperties();
+
+        archiveProp.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
+        archiveProp.putValue(ClassificationFolder.progressDuration.toString(), classificationProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+        archiveProp.putValue(ClassificationFolder.intermediateDuration.toString(), classificationProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+        archiveProp.putValue(ClassificationFolder.finalDetermination.toString(), classificationProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+        archiveFolder.save(RefreshMode.REFRESH);
+
+
+        setCmRetention(archiveFolder,null,null,RetentionCases.ArchiveFolder.getCases());
+
+        for (int y = 0; y < correspondenceAttribute.size(); y++) {
+            Folder myFolder = Factory.Folder.fetchInstance(objectStore, new Id(correspondenceFolderID), null);
+            Properties p1 = myFolder.getProperties();
+
+            p1.putValue(UserArchivingFolder.ownerID.toString(), correspondenceAttribute.get(y).getUserID());
+            p1.putValue(UserArchivingFolder.isOpened.toString(),archiveProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+            p1.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+            p1.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+            StringList senders1 = Factory.StringList.createList();
+            boolean b0 = senders1.addAll(correspondenceAttribute.get(y).getSenders());
+            p1.putValue(CorrespondenceFolder.Senders.toString(), senders1);
+
+            StringList recievers1 = Factory.StringList.createList();
+            boolean b12 = recievers1.addAll(correspondenceAttribute.get(y).getRecievers());
+            p1.putValue(CorrespondenceFolder.Recievers.toString(), recievers1);
+
+            StringList cc1 = Factory.StringList.createList();
+            boolean b22 = cc1.addAll(correspondenceAttribute.get(y).getCc());
+            p1.putValue(CorrespondenceFolder.CC.toString(), cc1);
+
+            StringList bcc1 = Factory.StringList.createList();
+            boolean b33 = bcc1.addAll(correspondenceAttribute.get(y).getBcc());
+            p1.putValue(CorrespondenceFolder.BCC.toString(), bcc1);
+
+            myFolder.save(RefreshMode.REFRESH);
+            setCmRetention(archiveFolder,myFolder,null,RetentionCases.CRSFolder.getCases());
+
+
+            ///////////////CREATE DOCUMENT
+
+            Document document = null;
+            //Get Folder
+//            Folder folder = null;
+            String folderName = myFolder.get_PathName();
+            System.out.println("foldername : " + folderName);
+            Folder folder = Factory.Folder.fetchInstance(objectStore, folderName, null);
+            System.out.println("folder : " + folder.get_FolderName());
+
+            File f = new File(correspondenceAttribute.get(y).getPath());
+
+            //Get the File details
+            String fileName = "";
+            int fileSize = 0;
+
+// Create Document
+            System.out.println(correspondenceAttribute);
+            String docClass = correspondenceAttribute.get(y).getClassification();
+            System.out.println("get doc Class: " + docClass);
+            try {
+                FileInputStream file = new FileInputStream(f);
+                Document doc = Factory.Document.createInstance(objectStore, docClass);
+                if (f.exists()) {
+                    System.out.println("file path : " + f);
+                    ContentTransfer contentTransfer = Factory.ContentTransfer.createInstance();
+                    ContentElementList contentElementList = Factory.ContentElement.createList();
+
+                    contentTransfer.setCaptureSource(file);
+                    contentElementList.add(contentTransfer);
+                    doc.set_ContentElements(contentElementList);
+                    contentTransfer.set_RetrievalName(correspondenceFolderName);
+                    //   doc.set_Creator(correspondenceAttribute.get(y).getUserID());
+                    doc.set_MimeType(getMimeType(correspondenceAttribute.get(y).getPath()));
+
+                }
+                System.out.println("doc " + doc.getProperties());
+//Check-in the doc
+                doc.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
+//Get and put the doc properties
+                String documentName = correspondenceAttribute.get(y).getDocTitle();
+                Properties p = doc.getProperties();
+                p.putValue(CorrespondenceDocument.DocumentTitle.toString(),correspondenceAttribute.get(y).getDocTitle());
+                p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+                p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+                p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.CRS.toString());
+                StringList senders = Factory.StringList.createList();
+                boolean b = senders.addAll(correspondenceAttribute.get(y).getSenders());
+                p.putValue(CorrespondenceFolder.Senders.toString(), senders);
+
+                StringList recievers = Factory.StringList.createList();
+                boolean b1 = recievers.addAll(correspondenceAttribute.get(y).getRecievers());
+                p.putValue(CorrespondenceFolder.Recievers.toString(), recievers);
+
+                StringList cc = Factory.StringList.createList();
+                boolean b2 = cc.addAll(correspondenceAttribute.get(y).getCc());
+                p.putValue(CorrespondenceFolder.CC.toString(),cc);
+
+                StringList bcc = Factory.StringList.createList();
+                boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
+                p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
+                for (String key : correspondenceAttribute.get(y).getProp().keySet()) {
+                    if (isValidDate(correspondenceAttribute.get(y).getProp().get(key).toString())) {
+                        // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
+                        System.out.println("IS Date :>");
+                        Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
+                        p.putValue(key, date);
+                        setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+                    } else {
+                        System.out.println("IS NO  Date :>");
+                        p.putValue(key, correspondenceAttribute.get(y).getProp().get(key).toString());
+                        setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+
+                    }
+                }
+//Stores above content to the folder
+                ReferentialContainmentRelationship rc = folder.file(doc,
+                        AutoUniqueName.AUTO_UNIQUE,
+                        documentName,
+                        DefineSecurityParentage.DO_NOT_DEFINE_SECURITY_PARENTAGE);
+                rc.save(RefreshMode.NO_REFRESH);
+
+            } catch (Exception e) {
+                System.out.println("Error MSG FROM CROSS:" + e.getMessage());
+                int size = e.getStackTrace().length - 1;
+                System.out.println(e.getStackTrace()[size - 1].getLineNumber());
+                throw new RuntimeException(e.getMessage());
+            }
+///////////////////////////////UPLOAD ATTACHMENTS////////////////////
+
+            for (int i = 0; i < correspondenceAttribute.get(y).getAttachmentsAttributes().size(); i++) {
+                try {
+                    //C:\\Users\\Administrator\\Desktop\\Maktaby\\maktaby\\TestAttachments\\Test1.txt"
+                    //correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath()
+                    File attachmentPath = new File(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath());
+
+                    FileInputStream file = new FileInputStream(attachmentPath);
+                    Document doc = Factory.Document.createInstance(objectStore, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
+                    System.out.println("Attachment Classification  ...." + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
+                    if (attachmentPath.exists()) {
+                        ContentTransfer contentTransfer = Factory.ContentTransfer.createInstance();
+                        ContentElementList contentElementList = Factory.ContentElement.createList();
+
+                        contentTransfer.setCaptureSource(file);
+                        contentElementList.add(contentTransfer);
+                        doc.set_ContentElements(contentElementList);
+                        contentTransfer.set_RetrievalName(correspondenceFolderName);
+                        doc.set_MimeType(getMimeType(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath()));
+                        //doc.set_Creator(correspondenceAttribute.get(y).getUserID());
+                    }
+
+
+//Check-in the doc
+                    doc.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
+//Get and put the doc properties
+                    String documentName2 = correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle();
+                    Properties p = doc.getProperties();
+                    p.putValue(CorrespondenceDocument.DocumentTitle.toString(), correspondenceAttribute.get(y).getDocTitle());
+                    p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+                    p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+                    p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.ATTACHMENT.toString());
+                    StringList senders = Factory.StringList.createList();
+                    boolean b = senders.addAll(correspondenceAttribute.get(y).getSenders());
+                    p.putValue(CorrespondenceFolder.Senders.toString(), senders);
+
+                    StringList recievers = Factory.StringList.createList();
+                    boolean b1 = recievers.addAll(correspondenceAttribute.get(y).getRecievers());
+                    p.putValue(CorrespondenceFolder.Recievers.toString(), recievers);
+
+                    StringList cc = Factory.StringList.createList();
+                    boolean b2 = cc.addAll(correspondenceAttribute.get(y).getCc());
+                    p.putValue(CorrespondenceFolder.CC.toString(), cc);
+
+                    StringList bcc = Factory.StringList.createList();
+                    boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
+                    p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
+                    p.putValue("DocumentTitle",correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle());
+                    System.out.println("prop : " + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp());
+
+                    for (String key : correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().keySet()) {
+                        System.out.println("value to check :" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+
+                        if (isValidDate(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString())) {
+//                                 System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
+                            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+                            p.putValue(key,date);
+                            setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+
+                        } else {
+                            System.out.println("IS NO  Date :>");
+
+                            p.putValue(key, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+                            setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+
+                        }
+                    }
+
+//                for (int j=0; j<correspondenceAttribute.getAttachmentsAttributes().get(i).getProp().size();j++) {
+//                    p.putValue(correspondenceAttribute.getAttachmentsAttributes().get(i).getProp()., correspondenceAttribute.getCorrespondenceID());
+//                }
+//Stores above content to the folder
+                    ReferentialContainmentRelationship rc = folder.file(doc,
+                            AutoUniqueName.AUTO_UNIQUE,
+                            documentName2,
+                            DefineSecurityParentage.DO_NOT_DEFINE_SECURITY_PARENTAGE);
+                    rc.save(RefreshMode.REFRESH);
+                }
+                catch (Exception e) {
+                    System.out.println("ERROR MSG FROM ATTACHMENTS" + e.getMessage());
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+        }
+    }
+
+    public void addCRSDocuments(ArrayList<CorrespondenceAttribute> correspondenceAttribute, String correspondenceFolderID) {
+        //////////////////CREATE CORRESPONDENCE FOLDER
+        ObjectStore objectStore = getObjectStore(getCEConnection());
+        Folder correspondenceFolder = Factory.Folder.fetchInstance(objectStore, new Id(correspondenceFolderID), null);
+        Folder archiveFolder = correspondenceFolder.get_Parent();
+        Folder classificationFolder = archiveFolder.get_Parent();
+        String correspondenceFolderName = correspondenceFolder.get_FolderName();
+        Properties correspondenceProp = correspondenceFolder.getProperties();
+        Properties archiveProp = archiveFolder.getProperties();
+        Properties classificationProp = classificationFolder.getProperties();
+
+//        parentProp.putValue(UserArchivingFolder.retentionStatus.toString(), RetentionStatus.ACTIVE.toString());
+//        parentProp.putValue(ClassificationFolder.progressDuration.toString(), archiveProp.getStringValue(ClassificationFolder.progressDuration.toString()));
+//        parentProp.putValue(ClassificationFolder.intermediateDuration.toString(), archiveProp.getStringValue(ClassificationFolder.intermediateDuration.toString()));
+//        parentProp.putValue(ClassificationFolder.finalDetermination.toString(), archiveProp.getStringValue(ClassificationFolder.finalDetermination.toString()));
+//        correspondenceFolder.save(RefreshMode.REFRESH);
+
+
+//        setCmRetention(archiveFolder,null,null,RetentionCases.ArchiveFolder.getCases());
+
+        for (int y = 0; y < correspondenceAttribute.size(); y++) {
+            Folder myFolder = Factory.Folder.fetchInstance(objectStore, new Id(correspondenceFolderID), null);
+            Properties p1 = myFolder.getProperties();
+
+            p1.putValue(UserArchivingFolder.ownerID.toString(), correspondenceAttribute.get(y).getUserID());
+            p1.putValue(UserArchivingFolder.isOpened.toString(),archiveProp.getBooleanValue(UserArchivingFolder.isOpened.toString()));
+            p1.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+            p1.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+            StringList senders1 = Factory.StringList.createList();
+            boolean b0 = senders1.addAll(correspondenceAttribute.get(y).getSenders());
+            p1.putValue(CorrespondenceFolder.Senders.toString(), senders1);
+
+            StringList recievers1 = Factory.StringList.createList();
+            boolean b12 = recievers1.addAll(correspondenceAttribute.get(y).getRecievers());
+            p1.putValue(CorrespondenceFolder.Recievers.toString(), recievers1);
+
+            StringList cc1 = Factory.StringList.createList();
+            boolean b22 = cc1.addAll(correspondenceAttribute.get(y).getCc());
+            p1.putValue(CorrespondenceFolder.CC.toString(), cc1);
+
+            StringList bcc1 = Factory.StringList.createList();
+            boolean b33 = bcc1.addAll(correspondenceAttribute.get(y).getBcc());
+            p1.putValue(CorrespondenceFolder.BCC.toString(), bcc1);
+
+            myFolder.save(RefreshMode.REFRESH);
+//            setCmRetention(archiveFolder,myFolder,null,RetentionCases.CRSFolder.getCases());
+
+
+            ///////////////CREATE DOCUMENT
+
+            Document document = null;
+            //Get Folder
+//            Folder folder = null;
+            String folderName = myFolder.get_PathName();
+            System.out.println("foldername : " + folderName);
+            Folder folder = Factory.Folder.fetchInstance(objectStore, folderName, null);
+            System.out.println("folder : " + folder.get_FolderName());
+
+            File f = new File(correspondenceAttribute.get(y).getPath());
+
+            //Get the File details
+            String fileName = "";
+            int fileSize = 0;
+
+// Create Document
+            System.out.println(correspondenceAttribute);
+            String docClass = correspondenceAttribute.get(y).getClassification();
+            System.out.println("get doc Class: " + docClass);
+            try {
+                FileInputStream file = new FileInputStream(f);
+                Document doc = Factory.Document.createInstance(objectStore, docClass);
+                if (f.exists()) {
+                    System.out.println("file path : " + f);
+                    ContentTransfer contentTransfer = Factory.ContentTransfer.createInstance();
+                    ContentElementList contentElementList = Factory.ContentElement.createList();
+
+                    contentTransfer.setCaptureSource(file);
+                    contentElementList.add(contentTransfer);
+                    doc.set_ContentElements(contentElementList);
+                    contentTransfer.set_RetrievalName(correspondenceFolderName);
+                    //   doc.set_Creator(correspondenceAttribute.get(y).getUserID());
+                    doc.set_MimeType(getMimeType(correspondenceAttribute.get(y).getPath()));
+
+                }
+                System.out.println("doc " + doc.getProperties());
+//Check-in the doc
+                doc.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
+//Get and put the doc properties
+                String documentName = correspondenceAttribute.get(y).getDocTitle();
+                Properties p = doc.getProperties();
+                p.putValue(CorrespondenceDocument.DocumentTitle.toString(),correspondenceAttribute.get(y).getDocTitle());
+                p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+                p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+                p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.CRS.toString());
+                StringList senders = Factory.StringList.createList();
+                boolean b = senders.addAll(correspondenceAttribute.get(y).getSenders());
+                p.putValue(CorrespondenceFolder.Senders.toString(), senders);
+
+                StringList recievers = Factory.StringList.createList();
+                boolean b1 = recievers.addAll(correspondenceAttribute.get(y).getRecievers());
+                p.putValue(CorrespondenceFolder.Recievers.toString(), recievers);
+
+                StringList cc = Factory.StringList.createList();
+                boolean b2 = cc.addAll(correspondenceAttribute.get(y).getCc());
+                p.putValue(CorrespondenceFolder.CC.toString(),cc);
+
+                StringList bcc = Factory.StringList.createList();
+                boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
+                p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
+                for (String key : correspondenceAttribute.get(y).getProp().keySet()) {
+                    if (isValidDate(correspondenceAttribute.get(y).getProp().get(key).toString())) {
+                        // System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
+                        System.out.println("IS Date :>");
+                        Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getProp().get(key).toString());
+                        p.putValue(key, date);
+//                        setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+                    } else {
+                        System.out.println("IS NO  Date :>");
+                        p.putValue(key, correspondenceAttribute.get(y).getProp().get(key).toString());
+//                        setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+
+                    }
+                }
+//Stores above content to the folder
+                doc.save(RefreshMode.REFRESH);
+                ReferentialContainmentRelationship rc = folder.file(doc,
+                        AutoUniqueName.AUTO_UNIQUE,
+                        documentName,
+                        DefineSecurityParentage.DO_NOT_DEFINE_SECURITY_PARENTAGE);
+                rc.save(RefreshMode.NO_REFRESH);
+
+            } catch (Exception e) {
+                System.out.println("Error MSG FROM CROSS:" + e.getMessage());
+                int size = e.getStackTrace().length - 1;
+                System.out.println(e.getStackTrace()[size - 1].getLineNumber());
+                throw new RuntimeException(e.getMessage());
+            }
+///////////////////////////////UPLOAD ATTACHMENTS////////////////////
+
+            for (int i = 0; i < correspondenceAttribute.get(y).getAttachmentsAttributes().size(); i++) {
+                try {
+                    //C:\\Users\\Administrator\\Desktop\\Maktaby\\maktaby\\TestAttachments\\Test1.txt"
+                    //correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath()
+                    File attachmentPath = new File(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath());
+
+                    FileInputStream file = new FileInputStream(attachmentPath);
+                    Document doc = Factory.Document.createInstance(objectStore, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
+                    System.out.println("Attachment Classification  ...." + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getClassification());
+                    if (attachmentPath.exists()) {
+                        ContentTransfer contentTransfer = Factory.ContentTransfer.createInstance();
+                        ContentElementList contentElementList = Factory.ContentElement.createList();
+
+                        contentTransfer.setCaptureSource(file);
+                        contentElementList.add(contentTransfer);
+                        doc.set_ContentElements(contentElementList);
+                        contentTransfer.set_RetrievalName(correspondenceFolderName);
+                        doc.set_MimeType(getMimeType(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getPath()));
+                        //doc.set_Creator(correspondenceAttribute.get(y).getUserID());
+                    }
+
+
+//Check-in the doc
+                    doc.checkin(AutoClassify.DO_NOT_AUTO_CLASSIFY, CheckinType.MAJOR_VERSION);
+//Get and put the doc properties
+                    String documentName2 = correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle();
+                    Properties p = doc.getProperties();
+                    p.putValue(CorrespondenceDocument.DocumentTitle.toString(), correspondenceAttribute.get(y).getDocTitle());
+                    p.putValue(CorrespondenceFolder.CorrespondenceID.toString(), correspondenceAttribute.get(y).getCorrespondenceID());
+                    p.putValue(CorrespondenceFolder.Subject.toString(), correspondenceAttribute.get(y).getSubject());
+                    p.putValue(CorrespondenceDocument.documentType.toString(),DocumentType.ATTACHMENT.toString());
+                    StringList senders = Factory.StringList.createList();
+                    boolean b = senders.addAll(correspondenceAttribute.get(y).getSenders());
+                    p.putValue(CorrespondenceFolder.Senders.toString(), senders);
+
+                    StringList recievers = Factory.StringList.createList();
+                    boolean b1 = recievers.addAll(correspondenceAttribute.get(y).getRecievers());
+                    p.putValue(CorrespondenceFolder.Recievers.toString(), recievers);
+
+                    StringList cc = Factory.StringList.createList();
+                    boolean b2 = cc.addAll(correspondenceAttribute.get(y).getCc());
+                    p.putValue(CorrespondenceFolder.CC.toString(), cc);
+
+                    StringList bcc = Factory.StringList.createList();
+                    boolean b3 = bcc.addAll(correspondenceAttribute.get(y).getBcc());
+                    p.putValue(CorrespondenceFolder.BCC.toString(), bcc);
+                    p.putValue("DocumentTitle",correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getDocTitle());
+                    System.out.println("prop : " + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp());
+
+                    for (String key : correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().keySet()) {
+                        System.out.println("value to check :" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+
+                        if (isValidDate(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString())) {
+//                                 System.out.println("IS Date :>" + correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).getClass().isInstance(new Date()));
+                            Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+                            p.putValue(key,date);
+//                            setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+
+                        } else {
+                            System.out.println("IS NO  Date :>");
+
+                            p.putValue(key, correspondenceAttribute.get(y).getAttachmentsAttributes().get(i).getProp().get(key).toString());
+//                            setCmRetention(archiveFolder,myFolder,doc,RetentionCases.Document.getCases());
+                        }
+                    }
+
+//                for (int j=0; j<correspondenceAttribute.getAttachmentsAttributes().get(i).getProp().size();j++) {
+//                    p.putValue(correspondenceAttribute.getAttachmentsAttributes().get(i).getProp()., correspondenceAttribute.getCorrespondenceID());
+//                }
+//Stores above content to the folder
+                    doc.save(RefreshMode.REFRESH);
+                    ReferentialContainmentRelationship rc = folder.file(doc,
+                            AutoUniqueName.AUTO_UNIQUE,
+                            documentName2,
+                            DefineSecurityParentage.DO_NOT_DEFINE_SECURITY_PARENTAGE);
+                    rc.save(RefreshMode.REFRESH);
+                }
+                catch (Exception e) {
+                    System.out.println("ERROR MSG FROM ATTACHMENTS" + e.getMessage());
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+        }
+    }
 
     public void createCorrespondenceDoc(ArrayList<CorrespondenceAttribute> correspondenceAttribute, String archiveFolderID) {
         //////////////////CREATE CORRESPONDENCE FOLDER
@@ -620,9 +1126,11 @@ public class FileNet {
     private void setCmRetention (Folder parentFolder, Folder crsFolder,Document doc, int cases) {
 
         Properties parentFolderProp = parentFolder.getProperties();
+
         String finalDetermination = parentFolderProp.getStringValue(ClassificationFolder.finalDetermination.toString());
         String progressDuration =  parentFolderProp.getStringValue(ClassificationFolder.progressDuration.toString());
         String intermediateDuration =  parentFolderProp.getStringValue(ClassificationFolder.intermediateDuration.toString());
+
         RetentionEndDates retentionEndDates = getRetentionEndDate(progressDuration,intermediateDuration);
         if (cases == RetentionCases.ArchiveFolder.getCases()) {
             if (finalDetermination.equals(FinalDetermination.SELECTION.toString()) || finalDetermination.equals("انتقاء")) {
